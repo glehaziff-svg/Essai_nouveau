@@ -1,0 +1,73 @@
+{
+  "general": {
+    "nom_entreprise": "Dupont Plomberie",
+    "slogan": "Votre plombier de confiance, disponible 7j/7",
+    "telephone": "06 12 34 56 78",
+    "email": "contact@dupont-plomberie.fr",
+    "adresse": "12 rue des Artisans, 75011 Paris",
+    "zone_intervention": "Paris et petite couronne",
+    "horaires": "Lun - Sam : 8h00 - 19h00 · Urgences 24h/24"
+  },
+  "accueil": {
+    "titre": "Plombier à Paris — Dépannage rapide et travaux soignés",
+    "sous_titre": "Intervention en moins d'une heure pour les urgences. Devis gratuit, tarifs transparents, travail garanti.",
+    "photo_principale": "/images/hero.svg",
+    "bouton_texte": "Demander un devis gratuit"
+  },
+  "a_propos": {
+    "titre": "Qui sommes-nous ?",
+    "texte": "Artisan plombier depuis plus de 15 ans, nous intervenons rapidement pour tous vos besoins en plomberie : dépannage, installation, rénovation. Notre priorité : un travail propre, durable et au juste prix. Chaque intervention est garantie et fait l'objet d'un devis clair avant travaux.",
+    "photo": "/images/about.svg"
+  },
+  "services": [
+    {
+      "titre": "Dépannage d'urgence",
+      "description": "Fuite d'eau, canalisation bouchée, chauffe-eau en panne : nous intervenons 7j/7 en moins d'une heure.",
+      "photo": "/images/service-urgence.svg"
+    },
+    {
+      "titre": "Installation sanitaire",
+      "description": "Pose de chauffe-eau, robinetterie, WC, douche à l'italienne. Matériel de qualité et finitions soignées.",
+      "photo": "/images/service-installation.svg"
+    },
+    {
+      "titre": "Rénovation salle de bain",
+      "description": "De la conception à la réalisation, nous rénovons votre salle de bain clé en main, dans le respect de votre budget.",
+      "photo": "/images/service-renovation.svg"
+    },
+    {
+      "titre": "Recherche de fuite",
+      "description": "Détection non destructive par caméra et gaz traceur. Nous trouvons la fuite sans casser vos murs.",
+      "photo": "/images/service-fuite.svg"
+    }
+  ],
+  "avis": [
+    {
+      "nom": "Marie L.",
+      "texte": "Intervention très rapide pour une fuite sous l'évier. Travail propre et tarif annoncé respecté. Je recommande !",
+      "note": 5
+    },
+    {
+      "nom": "Karim B.",
+      "texte": "Rénovation complète de notre salle de bain. Délais tenus, résultat impeccable. Un vrai professionnel.",
+      "note": 5
+    },
+    {
+      "nom": "Sophie D.",
+      "texte": "Plombier honnête et de bon conseil. Il m'a évité des travaux inutiles. Merci !",
+      "note": 5
+    }
+  ],
+  "galerie": {
+    "titre": "Nos réalisations",
+    "photos": [
+      { "image": "/images/realisation-1.svg", "legende": "Salle de bain moderne — Paris 11e" },
+      { "image": "/images/realisation-2.svg", "legende": "Installation chauffe-eau — Montreuil" },
+      { "image": "/images/realisation-3.svg", "legende": "Douche à l'italienne — Vincennes" }
+    ]
+  },
+  "contact": {
+    "titre": "Contactez-nous",
+    "texte": "Un problème de plomberie ? Une question ? Appelez-nous ou envoyez-nous un message, nous vous répondons rapidement."
+  }
+}

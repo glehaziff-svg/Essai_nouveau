@@ -1,0 +1,86 @@
+# Configuration de l'interface d'administration (Decap CMS)
+# Le client se connecte sur /admin pour modifier textes et photos.
+
+backend:
+  name: git-gateway
+  branch: main
+
+locale: fr
+
+media_folder: "images/uploads"
+public_folder: "/images/uploads"
+
+collections:
+  - name: "site"
+    label: "Contenu du site"
+    files:
+      - name: "contenu"
+        label: "Textes et photos du site"
+        file: "content/site.json"
+        fields:
+          - label: "Informations générales"
+            name: "general"
+            widget: "object"
+            fields:
+              - { label: "Nom de l'entreprise", name: "nom_entreprise", widget: "string" }
+              - { label: "Slogan", name: "slogan", widget: "string" }
+              - { label: "Téléphone", name: "telephone", widget: "string" }
+              - { label: "Email", name: "email", widget: "string" }
+              - { label: "Adresse", name: "adresse", widget: "string" }
+              - { label: "Zone d'intervention", name: "zone_intervention", widget: "string" }
+              - { label: "Horaires", name: "horaires", widget: "string" }
+
+          - label: "Page d'accueil"
+            name: "accueil"
+            widget: "object"
+            fields:
+              - { label: "Titre principal", name: "titre", widget: "string" }
+              - { label: "Sous-titre", name: "sous_titre", widget: "text" }
+              - { label: "Photo principale", name: "photo_principale", widget: "image" }
+              - { label: "Texte du bouton", name: "bouton_texte", widget: "string" }
+
+          - label: "À propos"
+            name: "a_propos"
+            widget: "object"
+            fields:
+              - { label: "Titre", name: "titre", widget: "string" }
+              - { label: "Texte de présentation", name: "texte", widget: "text" }
+              - { label: "Photo", name: "photo", widget: "image" }
+
+          - label: "Services"
+            name: "services"
+            widget: "list"
+            summary: "{{fields.titre}}"
+            fields:
+              - { label: "Titre du service", name: "titre", widget: "string" }
+              - { label: "Description", name: "description", widget: "text" }
+              - { label: "Photo", name: "photo", widget: "image" }
+
+          - label: "Avis clients"
+            name: "avis"
+            widget: "list"
+            summary: "{{fields.nom}}"
+            fields:
+              - { label: "Nom du client", name: "nom", widget: "string" }
+              - { label: "Avis", name: "texte", widget: "text" }
+              - { label: "Note (1 à 5)", name: "note", widget: "number", min: 1, max: 5, value_type: "int", default: 5 }
+
+          - label: "Galerie de réalisations"
+            name: "galerie"
+            widget: "object"
+            fields:
+              - { label: "Titre de la section", name: "titre", widget: "string" }
+              - label: "Photos"
+                name: "photos"
+                widget: "list"
+                summary: "{{fields.legende}}"
+                fields:
+                  - { label: "Photo", name: "image", widget: "image" }
+                  - { label: "Légende", name: "legende", widget: "string" }
+
+          - label: "Section contact"
+            name: "contact"
+            widget: "object"
+            fields:
+              - { label: "Titre", name: "titre", widget: "string" }
+              - { label: "Texte d'introduction", name: "texte", widget: "text" }

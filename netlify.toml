@@ -1,0 +1,4 @@
+[build]
+  publish = "."
+
+# Le site est 100% statique : aucune étape de build nécessaire.

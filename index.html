@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plombier — Dépannage & Installation</title>
+  <meta name="description" content="Plombier professionnel : dépannage d'urgence, installation sanitaire, rénovation de salle de bain. Devis gratuit.">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔧</text></svg>">
+</head>
+<body>
+
+  <header class="header">
+    <div class="container header-inner">
+      <a href="#" class="logo">🔧 <span data-content="general.nom_entreprise">Plomberie</span></a>
+      <nav class="nav" id="nav">
+        <a href="#services">Services</a>
+        <a href="#apropos">À propos</a>
+        <a href="#realisations">Réalisations</a>
+        <a href="#avis">Avis</a>
+        <a href="#contact">Contact</a>
+      </nav>
+      <a class="btn btn-phone" href="#" id="phone-link">📞 <span data-content="general.telephone"></span></a>
+      <button class="burger" id="burger" aria-label="Menu">☰</button>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="container hero-inner">
+      <div class="hero-text">
+        <p class="badge" data-content="general.slogan"></p>
+        <h1 data-content="accueil.titre"></h1>
+        <p class="hero-sub" data-content="accueil.sous_titre"></p>
+        <div class="hero-actions">
+          <a href="#contact" class="btn btn-primary" data-content="accueil.bouton_texte"></a>
+          <a href="#" id="phone-link-hero" class="btn btn-outline">📞 <span data-content="general.telephone"></span></a>
+        </div>
+        <ul class="hero-points">
+          <li>✅ Devis gratuit</li>
+          <li>✅ Tarifs transparents</li>
+          <li>✅ Travail garanti</li>
+        </ul>
+      </div>
+      <div class="hero-image">
+        <img data-img="accueil.photo_principale" alt="Plombier au travail">
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="services">
+    <div class="container">
+      <h2 class="section-title">Nos services</h2>
+      <div class="cards" id="services-list"></div>
+    </div>
+  </section>
+
+  <section class="section section-alt" id="apropos">
+    <div class="container about-inner">
+      <div class="about-image">
+        <img data-img="a_propos.photo" alt="Notre équipe">
+      </div>
+      <div class="about-text">
+        <h2 data-content="a_propos.titre"></h2>
+        <p data-content="a_propos.texte"></p>
+        <div class="about-infos">
+          <p>📍 <span data-content="general.zone_intervention"></span></p>
+          <p>🕗 <span data-content="general.horaires"></span></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="realisations">
+    <div class="container">
+      <h2 class="section-title" data-content="galerie.titre"></h2>
+      <div class="gallery" id="gallery-list"></div>
+    </div>
+  </section>
+
+  <section class="section section-alt" id="avis">
+    <div class="container">
+      <h2 class="section-title">Ils nous font confiance</h2>
+      <div class="cards" id="avis-list"></div>
+    </div>
+  </section>
+
+  <section class="section" id="contact">
+    <div class="container contact-inner">
+      <div>
+        <h2 data-content="contact.titre"></h2>
+        <p data-content="contact.texte"></p>
+        <div class="contact-infos">
+          <p>📞 <a href="#" id="phone-link-contact"><span data-content="general.telephone"></span></a></p>
+          <p>✉️ <a href="#" id="email-link"><span data-content="general.email"></span></a></p>
+          <p>📍 <span data-content="general.adresse"></span></p>
+          <p>🕗 <span data-content="general.horaires"></span></p>
+        </div>
+      </div>
+      <form class="contact-form" name="contact" method="POST" data-netlify="true">
+        <input type="hidden" name="form-name" value="contact">
+        <label>Votre nom
+          <input type="text" name="nom" required>
+        </label>
+        <label>Téléphone
+          <input type="tel" name="telephone" required>
+        </label>
+        <label>Votre message
+          <textarea name="message" rows="5" required placeholder="Décrivez votre besoin (fuite, installation, devis...)"></textarea>
+        </label>
+        <button type="submit" class="btn btn-primary">Envoyer ma demande</button>
+      </form>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <p>© <span id="year"></span> <span data-content="general.nom_entreprise"></span> — Tous droits réservés</p>
+      <p data-content="general.adresse"></p>
+    </div>
+  </footer>
+
+  <a href="#" class="fab-phone" id="phone-link-fab" aria-label="Appeler">📞</a>
+
+  <script src="/js/main.js"></script>
+  <!-- Netlify Identity : permet au client de finaliser son invitation à l'administration -->
+  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js" defer></script>
+  <script>
+    window.addEventListener('load', function () {
+      if (window.netlifyIdentity) {
+        window.netlifyIdentity.on('init', function (user) {
+          if (!user) {
+            window.netlifyIdentity.on('login', function () {
+              document.location.href = '/admin/';
+            });
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>
