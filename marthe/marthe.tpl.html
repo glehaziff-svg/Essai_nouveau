@@ -1,0 +1,372 @@
+<title>Marthe ne dit pas deux fois</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&family=Spectral:ital,wght@0,300;0,400;0,500;1,300;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+<style>
+/* ---------- jetons : granit & ajonc ------------------------------------ */
+:root{
+  --sol:#DCDDD8; --papier:#E6E7E2; --encre:#1B2125; --sourd:#5C645E;
+  --trait:#BFC2BB; --ajonc:#8A6710; --ajonc-fort:#6E520A;
+  --serif:"Spectral",Georgia,"Times New Roman",serif;
+  --lapid:"Cinzel","Trajan Pro",Georgia,serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --sol:#13171A; --papier:#1A1F22; --encre:#D5D8D2; --sourd:#8B938C;
+    --trait:#2E3438; --ajonc:#DCB444; --ajonc-fort:#E9C765;
+  }
+}
+:root[data-theme="dark"]{
+  --sol:#13171A; --papier:#1A1F22; --encre:#D5D8D2; --sourd:#8B938C;
+  --trait:#2E3438; --ajonc:#DCB444; --ajonc-fort:#E9C765;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--sol); color:var(--encre);
+  font-family:var(--serif); font-weight:300;
+  font-size:clamp(17px,1.05rem + .2vw,19px); line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+.page{max-width:41rem; margin:0 auto; padding:0 1.5rem 6rem}
+
+/* ---------- en-tete ----------------------------------------------------- */
+header{padding:5.5rem 0 2.25rem}
+.eyebrow{
+  font-family:var(--mono); font-size:.7rem; letter-spacing:.17em;
+  text-transform:uppercase; color:var(--sourd); margin:0 0 1.6rem;
+}
+h1{
+  font-family:var(--lapid); font-weight:600;
+  font-size:clamp(2rem,1.3rem + 3vw,3.15rem); line-height:1.12;
+  letter-spacing:.005em; margin:0; text-wrap:balance;
+}
+.dedicace{
+  margin:1.4rem 0 0; font-style:italic; color:var(--sourd);
+  font-size:1rem; max-width:32ch;
+}
+
+/* ---------- lecteur ----------------------------------------------------- */
+.lecteur{
+  position:sticky; top:0; z-index:20; background:var(--sol);
+  border-top:1px solid var(--trait); border-bottom:1px solid var(--trait);
+  padding:.85rem 0 .95rem; margin-bottom:3.5rem;
+}
+.lecteur-ligne{display:flex; align-items:center; gap:1rem}
+.bouton{
+  flex:none; width:2.6rem; height:2.6rem; padding:0; cursor:pointer;
+  background:var(--encre); color:var(--sol); border:0; border-radius:0;
+  display:grid; place-items:center;
+}
+.bouton:hover{background:var(--ajonc-fort)}
+.bouton:focus-visible{outline:2px solid var(--ajonc); outline-offset:3px}
+.bouton svg{width:.95rem; height:.95rem; fill:currentColor}
+.lecteur-info{flex:1; min-width:0}
+.section-active{
+  font-family:var(--mono); font-size:.72rem; letter-spacing:.15em;
+  text-transform:uppercase; color:var(--ajonc); display:block;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.chrono{
+  font-family:var(--mono); font-size:.72rem; color:var(--sourd);
+  font-variant-numeric:tabular-nums; flex:none;
+}
+.rail{
+  margin-top:.7rem; height:14px; cursor:pointer; position:relative;
+  display:flex; align-items:center;
+}
+.rail::before{content:""; position:absolute; inset-inline:0; height:1px; background:var(--trait)}
+.jauge{position:absolute; left:0; height:3px; background:var(--ajonc); width:0}
+.rail:focus-visible{outline:2px solid var(--ajonc); outline-offset:2px}
+
+/* ---------- partition --------------------------------------------------- */
+.bloc{margin-bottom:3.25rem}
+.etiquette{
+  font-family:var(--mono); font-size:.68rem; letter-spacing:.18em;
+  text-transform:uppercase; color:var(--sourd);
+  padding-bottom:.5rem; margin-bottom:1.1rem;
+  border-bottom:1px solid var(--trait);
+  display:flex; justify-content:space-between; gap:1rem;
+}
+.ligne{
+  display:grid; grid-template-columns:5.5rem 1fr; gap:0 1.1rem;
+  align-items:baseline; margin-bottom:.42rem;
+}
+.acc{
+  font-family:var(--mono); font-weight:500; font-size:.78rem;
+  color:var(--ajonc); letter-spacing:.04em; padding-top:.18em;
+}
+.txt{font-size:1.09rem; line-height:1.5}
+.bloc[data-refrain] .txt{font-weight:400; font-size:1.16rem}
+.bloc[data-refrain] .txt em{font-style:normal; font-family:var(--lapid); font-size:1.02em}
+.muet{color:var(--sourd); font-style:italic}
+
+/* mise en lumiere de la section jouee */
+.partition.joue .bloc{opacity:.34; transition:opacity .5s ease}
+.partition.joue .bloc.actif{opacity:1}
+@media (prefers-reduced-motion:reduce){.partition.joue .bloc{transition:none}}
+
+.final{margin-top:5rem}
+.final .txt{font-size:1.2rem}
+.chute{
+  margin-top:3.5rem; font-family:var(--lapid); font-size:1.5rem;
+  letter-spacing:.02em; line-height:1.5;
+}
+
+/* ---------- notes d'execution ------------------------------------------- */
+.notes{margin-top:6rem; padding-top:2.5rem; border-top:1px solid var(--trait)}
+h2{
+  font-family:var(--mono); font-size:.72rem; letter-spacing:.18em;
+  text-transform:uppercase; color:var(--sourd); font-weight:500;
+  margin:0 0 1.4rem;
+}
+.notes h2:not(:first-of-type){margin-top:3rem}
+.notes p{margin:0 0 1rem; max-width:60ch}
+.grille{width:100%; border-collapse:collapse; font-size:.9rem}
+.grille th,.grille td{
+  text-align:left; padding:.5rem .8rem .5rem 0; border-bottom:1px solid var(--trait);
+  vertical-align:baseline;
+}
+.grille th{
+  font-family:var(--mono); font-size:.66rem; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--sourd); font-weight:400;
+}
+.grille td:first-child{font-family:var(--mono); font-size:.82rem; color:var(--ajonc)}
+.grille td.num{font-family:var(--mono); font-variant-numeric:tabular-nums; color:var(--sourd); font-size:.82rem}
+.doigte{
+  font-family:var(--mono); font-size:.85rem; line-height:2.1;
+  overflow-x:auto; white-space:pre; color:var(--encre);
+}
+.doigte b{color:var(--ajonc); font-weight:500}
+.suite{font-family:var(--mono); font-size:.86rem; color:var(--encre); letter-spacing:.02em}
+footer{
+  margin-top:4.5rem; padding-top:1.8rem; border-top:1px solid var(--trait);
+  font-size:.88rem; color:var(--sourd); font-style:italic;
+}
+</style>
+
+<div class="page">
+
+<header>
+  <p class="eyebrow">Gwerz · Mi mineur · 66 à la noire</p>
+  <h1>Marthe ne dit pas deux fois</h1>
+  <p class="dedicace">Paroles et musique, pour Marthe — qui va à l'essentiel, et n'aime pas qu'on traîne.</p>
+</header>
+
+<div class="lecteur">
+  <div class="lecteur-ligne">
+    <button class="bouton" id="jouer" aria-label="Écouter">
+      <svg id="icone" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 1.5v13l11-6.5z"/></svg>
+    </button>
+    <span class="lecteur-info"><span class="section-active" id="ou">Maquette · guitare, basse et ligne de chant</span></span>
+    <span class="chrono" id="chrono">0:00 / 3:57</span>
+  </div>
+  <div class="rail" id="rail" role="slider" tabindex="0" aria-label="Position dans le morceau"
+       aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+    <div class="jauge" id="jauge"></div>
+  </div>
+</div>
+
+<div class="partition" id="partition">
+
+  <section class="bloc" data-s="1">
+    <div class="etiquette"><span>Couplet 1</span><span>Em · D · C · D</span></div>
+    <div class="ligne"><span class="acc">Em&nbsp;&nbsp;D</span><span class="txt">Elle ne répète pas.</span></div>
+    <div class="ligne"><span class="acc">C&nbsp;&nbsp;&nbsp;D</span><span class="txt">Un mot, et c'est réglé.</span></div>
+    <div class="ligne"><span class="acc">Em&nbsp;&nbsp;D</span><span class="txt">Le reste, elle le laisse au vent —</span></div>
+    <div class="ligne"><span class="acc">C&nbsp;&nbsp;&nbsp;D</span><span class="txt">il en passe assez par ici.</span></div>
+  </section>
+
+  <section class="bloc" data-s="2">
+    <div class="etiquette"><span>Couplet 2</span><span>même mélodie</span></div>
+    <div class="ligne"><span class="acc">Em&nbsp;&nbsp;D</span><span class="txt">Pas de grands discours à table,</span></div>
+    <div class="ligne"><span class="acc">C&nbsp;&nbsp;&nbsp;D</span><span class="txt">pas de promesses en trop.</span></div>
+    <div class="ligne"><span class="acc">Em&nbsp;&nbsp;D</span><span class="txt">Ce qui tient chez nous, c'est le granit,</span></div>
+    <div class="ligne"><span class="acc">C&nbsp;&nbsp;&nbsp;D</span><span class="txt">et ce qui tient, c'est ce qu'on fait.</span></div>
+  </section>
+
+  <section class="bloc" data-s="3" data-refrain>
+    <div class="etiquette"><span>Refrain</span><span>C · D · Em · Em</span></div>
+    <div class="ligne"><span class="acc">C</span><span class="txt"><em>Marthe,</em></span></div>
+    <div class="ligne"><span class="acc">D</span><span class="txt">tu ne gaspilles rien :</span></div>
+    <div class="ligne"><span class="acc">Em&nbsp;&nbsp;Em</span><span class="txt">ni le pain, ni le temps, ni les mots.</span></div>
+    <div class="ligne"><span class="acc">C</span><span class="txt"><em>Marthe,</em></span></div>
+    <div class="ligne"><span class="acc">D</span><span class="txt">je n'attends pas de belle phrase —</span></div>
+    <div class="ligne"><span class="acc">Em&nbsp;&nbsp;D</span><span class="txt">tu es là, et c'est déjà tout.</span></div>
+  </section>
+
+  <section class="bloc" data-s="4">
+    <div class="etiquette"><span>Couplet 3</span><span>même mélodie</span></div>
+    <div class="ligne"><span class="acc">Em&nbsp;&nbsp;D</span><span class="txt">On ne s'est jamais dit <i>toujours</i>.</span></div>
+    <div class="ligne"><span class="acc">C&nbsp;&nbsp;&nbsp;D</span><span class="txt">On a dit <i>demain</i>, puis <i>demain</i>,</span></div>
+    <div class="ligne"><span class="acc">Em&nbsp;&nbsp;D</span><span class="txt">et voilà où ça nous a menés :</span></div>
+    <div class="ligne"><span class="acc">C&nbsp;&nbsp;&nbsp;D</span><span class="txt">plus loin que tous les serments.</span></div>
+  </section>
+
+  <section class="bloc" data-s="5">
+    <div class="etiquette"><span>Pont</span><span>Am · Em · C · D &nbsp;(×3)</span></div>
+    <div class="ligne"><span class="acc">Am&nbsp;&nbsp;Em</span><span class="txt">Quand ça souffle, tu ne fermes pas les volets —</span></div>
+    <div class="ligne"><span class="acc">C&nbsp;&nbsp;&nbsp;D</span><span class="txt">tu sors voir.</span></div>
+    <div class="ligne"><span class="acc">Am&nbsp;&nbsp;Em</span><span class="txt">Quand ça tombe, tu ne dis rien —</span></div>
+    <div class="ligne"><span class="acc">C&nbsp;&nbsp;&nbsp;D</span><span class="txt">tu ramasses.</span></div>
+    <div class="ligne"><span class="acc">Am&nbsp;&nbsp;Em</span><span class="txt">Et le lendemain, la table est mise</span></div>
+    <div class="ligne"><span class="acc">C&nbsp;&nbsp;&nbsp;D</span><span class="txt">comme si de rien n'était.</span></div>
+  </section>
+
+  <section class="bloc" data-s="6" data-refrain>
+    <div class="etiquette"><span>Refrain</span><span>reprise</span></div>
+    <div class="ligne"><span class="acc">C</span><span class="txt"><em>Marthe,</em></span></div>
+    <div class="ligne"><span class="acc">D</span><span class="txt">tu ne gaspilles rien :</span></div>
+    <div class="ligne"><span class="acc">Em&nbsp;&nbsp;Em</span><span class="txt">ni le pain, ni le temps, ni les mots.</span></div>
+    <div class="ligne"><span class="acc">C</span><span class="txt"><em>Marthe,</em></span></div>
+    <div class="ligne"><span class="acc">D</span><span class="txt">je n'attends pas de belle phrase —</span></div>
+    <div class="ligne"><span class="acc">Em&nbsp;&nbsp;D</span><span class="txt">tu es là, et c'est déjà tout.</span></div>
+  </section>
+
+  <section class="bloc final" data-s="7">
+    <div class="etiquette"><span>Final</span><span>presque parlé, puis silence</span></div>
+    <div class="ligne"><span class="acc">Em</span><span class="txt">Alors je ne vais pas faire long.</span></div>
+    <div class="ligne"><span class="acc">C</span><span class="txt">Tu détestes ça.</span></div>
+    <div class="ligne"><span class="acc">D</span><span class="txt muet">— une mesure, rien —</span></div>
+    <div class="chute">
+      Juste :<br>
+      c'était toi.<br>
+      Et c'est encore toi.
+    </div>
+  </section>
+
+</div>
+
+<div class="notes">
+
+  <h2>Comment la jouer</h2>
+  <p>Voix nue et une seule guitare, aux doigts, sans médiator. Le tempo est lent — 66 à la noire — et il ne bouge pas : c'est la retenue qui fait tenir la chanson. Aucun arrangement, aucune nappe, aucun ajout. Ce serait contredire le texte.</p>
+  <p>Capo en case 2 si la mélodie est trop grave pour votre voix ; les positions ne changent pas.</p>
+
+  <h2>Les quatre accords</h2>
+  <div class="doigte">Em   0 2 2 0 0 0     le socle, on y revient toujours
+C    x 3 2 0 1 0     l'ouverture du refrain
+D    x x 0 2 3 2     la tension, jamais résolue tout de suite
+Am   x 0 2 2 1 0     réservé au pont</div>
+  <p>Arpège : basse sur le premier temps, puis les cordes aiguës en croches régulières. Le motif de la maquette est <span class="suite">6 – 3 – 5 – 2 – 4 – 1 – 5 – 2</span> (numéros de cordes, de la grave à l'aiguë).</p>
+
+  <h2>Structure</h2>
+  <div style="overflow-x:auto">
+  <table class="grille">
+    <thead><tr><th>Section</th><th>Mesures</th><th>Accords</th><th>Repère</th></tr></thead>
+    <tbody>
+      <tr><td>Intro</td><td class="num">4</td><td>Em D C D</td><td class="num">0:00</td></tr>
+      <tr><td>Couplet 1</td><td class="num">8</td><td>Em D C D ×2</td><td class="num">0:14</td></tr>
+      <tr><td>Couplet 2</td><td class="num">8</td><td>Em D C D ×2</td><td class="num">0:43</td></tr>
+      <tr><td>Refrain</td><td class="num">8</td><td>C D Em Em · C D Em D</td><td class="num">1:12</td></tr>
+      <tr><td>Couplet 3</td><td class="num">8</td><td>Em D C D ×2</td><td class="num">1:41</td></tr>
+      <tr><td>Pont</td><td class="num">12</td><td>Am Em C D ×3</td><td class="num">2:10</td></tr>
+      <tr><td>Refrain</td><td class="num">8</td><td>C D Em Em · C D Em D</td><td class="num">2:54</td></tr>
+      <tr><td>Final</td><td class="num">6</td><td>Em C D Em C Em</td><td class="num">3:23</td></tr>
+      <tr><td>Outro</td><td class="num">2</td><td>C Em</td><td class="num">3:45</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2>La maquette</h2>
+  <p>Ce que vous entendez est une maquette de synthèse : cordes pincées pour la guitare et la basse, et une voix de synthèse qui ne fait que porter la mélodie, note pour note. Elle sert à apprendre l'air — pas à le remplacer. Chantée pour de vrai, avec les mots, ce n'est plus la même chanson.</p>
+
+  <footer>Le fichier MIDI accompagne cette page : il s'ouvre dans MuseScore ou n'importe quel logiciel de musique, si vous voulez la partition sur papier ou changer de tonalité.</footer>
+</div>
+</div>
+
+<audio id="audio" preload="metadata" src="data:audio/mpeg;base64,__AUDIO_B64__"></audio>
+
+<script>
+(function(){
+  var audio = document.getElementById('audio'),
+      bouton = document.getElementById('jouer'),
+      icone = document.getElementById('icone'),
+      jauge = document.getElementById('jauge'),
+      rail  = document.getElementById('rail'),
+      ou    = document.getElementById('ou'),
+      chrono= document.getElementById('chrono'),
+      part  = document.getElementById('partition');
+
+  var MESURE = 4 * 60 / 66;                 // 3,636 s
+  // (nom affiche, nombre de mesures, index du bloc de partition ou null)
+  var PLAN = [
+    ['Intro',        4, null],
+    ['Couplet 1',    8, '1'],
+    ['Couplet 2',    8, '2'],
+    ['Refrain',      8, '3'],
+    ['Couplet 3',    8, '4'],
+    ['Pont',        12, '5'],
+    ['Refrain',      8, '6'],
+    ['Final',        6, '7'],
+    ['Outro',        2, null]
+  ];
+  var bornes = [], t = 0;
+  PLAN.forEach(function(p){ bornes.push(t); t += p[1] * MESURE; });
+  var DUREE_PLAN = t;
+
+  var LECTURE = '<path d="M3 1.5v13l11-6.5z"/>',
+      PAUSE   = '<path d="M3 1.5h3.6v13H3zM9.4 1.5H13v13H9.4z"/>';
+
+  function mmss(s){
+    if (!isFinite(s) || s < 0) s = 0;
+    var m = Math.floor(s / 60), r = Math.floor(s % 60);
+    return m + ':' + (r < 10 ? '0' : '') + r;
+  }
+  function duree(){
+    return (audio.duration && isFinite(audio.duration)) ? audio.duration : DUREE_PLAN;
+  }
+
+  bouton.addEventListener('click', function(){
+    if (audio.paused) { audio.play().catch(function(){ ou.textContent = 'Lecture impossible dans ce navigateur'; }); }
+    else audio.pause();
+  });
+  audio.addEventListener('play', function(){
+    icone.innerHTML = PAUSE; bouton.setAttribute('aria-label','Pause');
+    part.classList.add('joue');
+  });
+  audio.addEventListener('pause', function(){
+    icone.innerHTML = LECTURE; bouton.setAttribute('aria-label','Écouter');
+  });
+  audio.addEventListener('ended', function(){
+    part.classList.remove('joue');
+    [].forEach.call(part.querySelectorAll('.bloc'), function(b){ b.classList.remove('actif'); });
+    ou.textContent = 'Maquette · guitare, basse et ligne de chant';
+  });
+
+  var dernier = null;
+  audio.addEventListener('timeupdate', function(){
+    var d = duree(), p = d ? audio.currentTime / d : 0;
+    jauge.style.width = (p * 100) + '%';
+    rail.setAttribute('aria-valuenow', Math.round(p * 100));
+    chrono.textContent = mmss(audio.currentTime) + ' / ' + mmss(d);
+
+    var i = 0;
+    for (var k = 0; k < bornes.length; k++) if (audio.currentTime >= bornes[k]) i = k;
+    if (i !== dernier){
+      dernier = i;
+      ou.textContent = PLAN[i][0];
+      [].forEach.call(part.querySelectorAll('.bloc'), function(b){
+        b.classList.toggle('actif', b.dataset.s === PLAN[i][2]);
+      });
+    }
+  });
+
+  function viser(ev){
+    var r = rail.getBoundingClientRect(),
+        x = ((ev.touches ? ev.touches[0].clientX : ev.clientX) - r.left) / r.width;
+    audio.currentTime = Math.max(0, Math.min(1, x)) * duree();
+  }
+  rail.addEventListener('click', viser);
+  rail.addEventListener('keydown', function(e){
+    var pas = e.key === 'ArrowRight' ? 5 : e.key === 'ArrowLeft' ? -5 : 0;
+    if (pas){ e.preventDefault(); audio.currentTime = Math.max(0, Math.min(duree(), audio.currentTime + pas)); }
+  });
+
+  audio.addEventListener('loadedmetadata', function(){
+    chrono.textContent = '0:00 / ' + mmss(duree());
+  });
+})();
+</script>
