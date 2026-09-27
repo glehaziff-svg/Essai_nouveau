@@ -1,0 +1,287 @@
+<title>Frais de déplacement</title>
+<style>
+:root{
+  --fond:#EEF1F4; --papier:#FFFFFF; --encre:#1C2733; --doux:#5A6B7B;
+  --trait:#CBD5DF; --trait-fort:#9FB0BF; --bleu:#1F5C8B; --bleu-fort:#17466B;
+  --bleu-fonce:#123E5E; --bandeau:#1F5C8B; --tot:#0E4A2F; --tot-fond:#E4F1EA;
+  --sans:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+:root{ --bleu-fort:#17466B; }
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --fond:#0F151B; --papier:#182029; --encre:#E6ECF2; --doux:#93A2B2;
+    --trait:#2B3844; --trait-fort:#3C4C5A; --bleu:#4C93C9; --bleu-fort:#5AA0D4;
+    --bleu-fonce:#2C5B80; --bandeau:#20486A; --tot:#8FE0B4; --tot-fond:#12352A;
+  }
+}
+:root[data-theme="dark"]{
+  --fond:#0F151B; --papier:#182029; --encre:#E6ECF2; --doux:#93A2B2;
+  --trait:#2B3844; --trait-fort:#3C4C5A; --bleu:#4C93C9; --bleu-fort:#5AA0D4;
+  --bleu-fonce:#2C5B80; --bandeau:#20486A; --tot:#8FE0B4; --tot-fond:#12352A;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fond);color:var(--encre);font-family:var(--sans);
+  font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased;}
+.feuille{max-width:900px;margin:24px auto;background:var(--papier);
+  border:1px solid var(--trait);border-radius:8px;overflow:hidden;
+  box-shadow:0 2px 14px rgba(0,0,0,.06);}
+
+/* ---- barre d'outils (ne s'imprime pas) ---- */
+.outils{display:flex;flex-wrap:wrap;gap:10px;align-items:center;
+  padding:14px 22px;background:var(--fond);border-bottom:1px solid var(--trait);}
+.outils .grandit{flex:1}
+button{font-family:var(--sans);font-size:15px;font-weight:600;cursor:pointer;
+  border-radius:6px;padding:.6rem 1rem;border:2px solid transparent;}
+.btn-imp{background:var(--tot);color:#fff;border-color:var(--tot);}
+.btn-imp{background:#146C43;border-color:#146C43;color:#fff;}
+.btn-imp:hover{filter:brightness(1.08)}
+.btn-add{background:var(--bleu);border-color:var(--bleu);color:#fff}
+.btn-add:hover{filter:brightness(1.08)}
+.btn-sec{background:transparent;border-color:var(--trait-fort);color:var(--encre)}
+.btn-sec:hover{background:var(--fond)}
+button:focus-visible{outline:3px solid var(--bleu-fort);outline-offset:2px}
+
+/* ---- corps ---- */
+.corps{padding:26px 30px 34px}
+.entete{display:flex;justify-content:space-between;align-items:flex-start;
+  gap:20px;border-bottom:3px solid var(--bandeau);padding-bottom:14px;margin-bottom:20px;}
+h1{margin:0;font-size:26px;color:var(--bleu-fonce);letter-spacing:.01em}
+.entete .sous{margin:4px 0 0;color:var(--doux);font-size:14px}
+.ident{display:grid;grid-template-columns:repeat(2,1fr);gap:12px 20px;margin-bottom:22px}
+.champ{display:flex;flex-direction:column;gap:4px}
+.champ.large{grid-column:1 / -1}
+label{font-size:13px;font-weight:600;color:var(--doux);text-transform:uppercase;letter-spacing:.04em}
+input, .cellinput{font-family:var(--sans);font-size:16px;color:var(--encre);
+  background:var(--papier);border:1px solid var(--trait);border-radius:5px;padding:.5rem .6rem;}
+input:focus{outline:2px solid var(--bleu-fort);outline-offset:0;border-color:var(--bleu-fort)}
+
+.taux{display:flex;align-items:center;gap:10px;background:var(--fond);
+  border:1px solid var(--trait);border-radius:6px;padding:10px 14px;margin-bottom:18px}
+.taux label{margin:0}
+.taux input{width:110px;text-align:right}
+
+/* ---- tableau ---- */
+.tablebox{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:15px}
+thead th{background:var(--bandeau);color:#fff;font-size:13px;font-weight:600;
+  text-transform:uppercase;letter-spacing:.03em;padding:.6rem .5rem;text-align:left}
+thead th.num{text-align:right}
+tbody td{border-bottom:1px solid var(--trait);padding:4px 5px;vertical-align:middle}
+tbody input{width:100%;border:1px solid transparent;background:transparent;border-radius:4px}
+tbody input:hover{border-color:var(--trait)}
+tbody input.num{text-align:right;font-variant-numeric:tabular-nums}
+td.total{text-align:right;font-variant-numeric:tabular-nums;font-weight:600;
+  white-space:nowrap;padding-right:8px}
+td.sup{width:34px;text-align:center}
+.btn-sup{background:transparent;border:0;color:var(--doux);font-size:19px;
+  line-height:1;padding:4px 8px;border-radius:5px;cursor:pointer}
+.btn-sup:hover{background:#f2d5d5;color:#a12}
+tfoot td{padding:.8rem .5rem;font-size:17px}
+tfoot .lbl{text-align:right;font-weight:600}
+tfoot .grand{text-align:right;font-weight:800;font-size:20px;color:var(--tot);
+  background:var(--tot-fond);font-variant-numeric:tabular-nums;white-space:nowrap;
+  border-radius:5px}
+
+/* ---- signature ---- */
+.pied{display:flex;justify-content:space-between;gap:30px;margin-top:34px}
+.pied .bloc{flex:1;font-size:14px;color:var(--doux)}
+.pied .ligne-sig{margin-top:52px;border-top:1px solid var(--trait-fort);padding-top:6px}
+.faitle input{border-bottom:1px solid var(--trait-fort);border-top:0;border-left:0;border-right:0;
+  border-radius:0;padding:2px 4px}
+
+/* ---- impression ---- */
+@media print{
+  body{background:#fff;font-size:12pt}
+  .feuille{margin:0;border:0;box-shadow:none;max-width:none;border-radius:0}
+  .outils{display:none !important}
+  .corps{padding:0}
+  .btn-sup{display:none !important}
+  td.sup{display:none}
+  th.sup-h{display:none}
+  input,.taux{background:#fff !important;color:#000 !important;border-color:#999 !important}
+  thead th{background:#1F5C8B !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  tfoot .grand{background:#E4F1EA !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  @page{margin:1.4cm}
+}
+</style>
+
+<div class="feuille">
+
+  <div class="outils">
+    <button class="btn-add" id="ajouter">＋ Ajouter une ligne</button>
+    <span class="grandit"></span>
+    <button class="btn-sec" id="vider">Tout effacer</button>
+    <button class="btn-imp" id="imprimer">🖨 Imprimer</button>
+  </div>
+
+  <div class="corps">
+
+    <div class="entete">
+      <div>
+        <h1>Note de frais de déplacement</h1>
+        <p class="sous">Indemnités kilométriques</p>
+      </div>
+      <div style="text-align:right;font-size:14px;color:var(--doux)">
+        <div class="champ" style="align-items:flex-end">
+          <label for="periode">Période / Année</label>
+          <input id="periode" style="width:150px;text-align:right" placeholder="2026">
+        </div>
+      </div>
+    </div>
+
+    <div class="ident">
+      <div class="champ">
+        <label for="nom">Nom et prénom</label>
+        <input id="nom" placeholder="Votre nom" value="LE HAZIFF Gérald">
+      </div>
+      <div class="champ">
+        <label for="orga">Organisme / Association</label>
+        <input id="orga" placeholder="(facultatif)">
+      </div>
+      <div class="champ large">
+        <label for="vehicule">Véhicule (marque, immatriculation, puissance fiscale)</label>
+        <input id="vehicule" placeholder="(facultatif)">
+      </div>
+    </div>
+
+    <div class="taux">
+      <label for="tauxdefaut">Prix du km par défaut (€)</label>
+      <input id="tauxdefaut" class="num" type="text" inputmode="decimal" value="0,60">
+      <span style="color:var(--doux);font-size:13px">— appliqué aux nouvelles lignes ; modifiable ligne par ligne.</span>
+    </div>
+
+    <div class="tablebox">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:120px">Date</th>
+          <th>Motif</th>
+          <th class="num" style="width:110px">Prix du km</th>
+          <th class="num" style="width:100px">Nombre de km</th>
+          <th class="num" style="width:120px">Total</th>
+          <th class="sup-h" style="width:34px"></th>
+        </tr>
+      </thead>
+      <tbody id="lignes"></tbody>
+      <tfoot>
+        <tr>
+          <td colspan="4" class="lbl">TOTAL À REMBOURSER</td>
+          <td class="grand" id="grandtotal">0,00 €</td>
+          <td class="sup"></td>
+        </tr>
+      </tfoot>
+    </table>
+    </div>
+
+    <div class="pied">
+      <div class="bloc faitle">
+        Fait à <input id="faita" style="width:150px" placeholder="ville">
+        &nbsp;le <input id="faitle" style="width:130px" placeholder="jj/mm/aaaa">
+      </div>
+      <div class="bloc">
+        <div class="ligne-sig">Signature</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function(){
+  var MOTIF_DEFAUT = "Restructuration logiciel informatique module : Administration 1/6";
+  var CLE = "frais-deplacement-v1";
+  var tbody = document.getElementById('lignes');
+
+  function nombre(v){
+    if(v==null) return 0;
+    v = (""+v).replace(/\s/g,'').replace(',', '.').replace('€','');
+    var n = parseFloat(v);
+    return isFinite(n) ? n : 0;
+  }
+  function euros(n){
+    return n.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' €';
+  }
+
+  function creerLigne(d){
+    d = d || {};
+    var tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td><input class="date" type="date"></td>' +
+      '<td><input class="motif" type="text"></td>' +
+      '<td><input class="prix num" type="text" inputmode="decimal"></td>' +
+      '<td><input class="km num" type="text" inputmode="decimal"></td>' +
+      '<td class="total">0,00 €</td>' +
+      '<td class="sup"><button class="btn-sup" title="Supprimer la ligne" aria-label="Supprimer">✕</button></td>';
+    tr.querySelector('.date').value  = d.date  || '';
+    tr.querySelector('.motif').value = (d.motif!=null ? d.motif : MOTIF_DEFAUT);
+    tr.querySelector('.prix').value  = (d.prix!=null ? d.prix : document.getElementById('tauxdefaut').value);
+    tr.querySelector('.km').value    = d.km || '';
+    tr.querySelector('.btn-sup').addEventListener('click', function(){
+      tr.remove(); recalcul(); sauver();
+    });
+    tr.addEventListener('input', function(){ recalcul(); sauver(); });
+    tbody.appendChild(tr);
+    return tr;
+  }
+
+  function recalcul(){
+    var total = 0;
+    tbody.querySelectorAll('tr').forEach(function(tr){
+      var p = nombre(tr.querySelector('.prix').value);
+      var k = nombre(tr.querySelector('.km').value);
+      var t = p * k;
+      tr.querySelector('.total').textContent = euros(t);
+      total += t;
+    });
+    document.getElementById('grandtotal').textContent = euros(total);
+  }
+
+  var CHAMPS = ['nom','orga','vehicule','periode','tauxdefaut','faita','faitle'];
+
+  function sauver(){
+    var data = { entete:{}, lignes:[] };
+    CHAMPS.forEach(function(id){ data.entete[id] = document.getElementById(id).value; });
+    tbody.querySelectorAll('tr').forEach(function(tr){
+      data.lignes.push({
+        date: tr.querySelector('.date').value,
+        motif: tr.querySelector('.motif').value,
+        prix: tr.querySelector('.prix').value,
+        km: tr.querySelector('.km').value
+      });
+    });
+    try{ localStorage.setItem(CLE, JSON.stringify(data)); }catch(e){}
+  }
+
+  function charger(){
+    var data = null;
+    try{ data = JSON.parse(localStorage.getItem(CLE)); }catch(e){}
+    if(data && data.entete){
+      CHAMPS.forEach(function(id){
+        if(data.entete[id]!=null) document.getElementById(id).value = data.entete[id];
+      });
+    }
+    if(data && data.lignes && data.lignes.length){
+      data.lignes.forEach(creerLigne);
+    } else {
+      creerLigne(); creerLigne(); creerLigne();
+    }
+    recalcul();
+  }
+
+  document.getElementById('ajouter').addEventListener('click', function(){
+    creerLigne(); sauver();
+  });
+  document.getElementById('vider').addEventListener('click', function(){
+    if(confirm('Effacer toutes les lignes et repartir de zéro ?')){
+      tbody.innerHTML=''; creerLigne(); creerLigne(); creerLigne();
+      recalcul(); sauver();
+    }
+  });
+  document.getElementById('imprimer').addEventListener('click', function(){ window.print(); });
+  CHAMPS.forEach(function(id){
+    document.getElementById(id).addEventListener('input', sauver);
+  });
+
+  charger();
+})();
+</script>
