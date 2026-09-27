@@ -78,8 +78,12 @@ input:focus{outline:2px solid var(--bleu-fort);outline-offset:0;border-color:var
 
 .taux{display:flex;align-items:center;gap:10px;background:var(--fond);
   border:1px solid var(--trait);border-radius:6px;padding:10px 14px;margin-bottom:18px}
+.taux{flex-wrap:wrap}
 .taux label{margin:0}
-.taux input{width:110px;text-align:right}
+.taux input{width:90px;text-align:right}
+.bareme-box{display:flex;align-items:center;gap:8px;margin-left:6px}
+.bareme-box select{font-family:var(--sans);font-size:14px;padding:.45rem .5rem;
+  border:1px solid var(--trait-fort);border-radius:5px;background:var(--papier);color:var(--encre)}
 
 /* ---- tableau ---- */
 .tablebox{overflow-x:auto}
@@ -134,6 +138,7 @@ tfoot .grand{text-align:right;font-weight:800;font-size:20px;color:var(--tot);
   .feuille{margin:0;border:0;box-shadow:none;max-width:none;border-radius:0}
   .outils{display:none !important}
   .notesbar{display:none !important}
+  .bareme-box{display:none !important}
   .corps{padding:0}
   .btn-sup{display:none !important}
   .sig-actions{display:none !important}
@@ -233,9 +238,19 @@ tfoot .grand{text-align:right;font-weight:800;font-size:20px;color:var(--tot);
     </div>
 
     <div class="taux">
-      <label for="tauxdefaut">Prix du km par défaut (€)</label>
-      <input id="tauxdefaut" class="num" type="text" inputmode="decimal" value="0,60">
-      <span style="color:var(--doux);font-size:13px">— s'applique à toutes les lignes ; reste modifiable ligne par ligne ensuite.</span>
+      <label for="tauxdefaut">Prix du km (€)</label>
+      <input id="tauxdefaut" class="num" type="text" inputmode="decimal" value="0,529">
+      <span class="bareme-box">
+        <label for="bareme">Barème (≤ 5000 km)</label>
+        <select id="bareme">
+          <option value="">— choisir —</option>
+          <option value="0,529">3 CV et moins — 0,529 €</option>
+          <option value="0,606">4 CV — 0,606 €</option>
+          <option value="0,636">5 CV — 0,636 €</option>
+          <option value="0,665">6 CV — 0,665 €</option>
+          <option value="0,697">7 CV et plus — 0,697 €</option>
+        </select>
+      </span>
     </div>
 
     <div class="tablebox">
@@ -479,10 +494,20 @@ tfoot .grand{text-align:right;font-weight:800;font-size:20px;color:var(--tot);
   });
 
   // Changer le prix du km en haut applique le nouveau tarif à toutes les lignes
-  document.getElementById('tauxdefaut').addEventListener('input', function(){
-    var t = this.value;
+  function appliquerTaux(t){
     tbody.querySelectorAll('tr .prix').forEach(function(champ){ champ.value = t; });
     recalcul(); sauver();
+  }
+  document.getElementById('tauxdefaut').addEventListener('input', function(){
+    appliquerTaux(this.value);
+  });
+
+  // Choisir un taux du barème kilométrique remplit le prix et l'applique partout
+  document.getElementById('bareme').addEventListener('change', function(){
+    if(!this.value) return;
+    document.getElementById('tauxdefaut').value = this.value;
+    appliquerTaux(this.value);
+    message('✓ Barème appliqué : ' + this.value + ' €/km');
   });
 
   charger();
