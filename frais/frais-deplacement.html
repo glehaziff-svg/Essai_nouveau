@@ -39,6 +39,10 @@ button{font-family:var(--sans);font-size:15px;font-weight:600;cursor:pointer;
 .btn-add:hover{filter:brightness(1.08)}
 .btn-sec{background:transparent;border-color:var(--trait-fort);color:var(--encre)}
 .btn-sec:hover{background:var(--fond)}
+.btn-enr{background:var(--bleu-fonce);border-color:var(--bleu-fonce);color:#fff}
+.btn-enr:hover{filter:brightness(1.12)}
+.etat{font-size:14px;font-weight:600;color:#146C43;opacity:0;transition:opacity .2s}
+.etat.vu{opacity:1}
 button:focus-visible{outline:3px solid var(--bleu-fort);outline-offset:2px}
 
 /* ---- corps ---- */
@@ -112,8 +116,10 @@ tfoot .grand{text-align:right;font-weight:800;font-size:20px;color:var(--tot);
 
   <div class="outils">
     <button class="btn-add" id="ajouter">＋ Ajouter une ligne</button>
+    <span class="etat" id="etat" aria-live="polite"></span>
     <span class="grandit"></span>
     <button class="btn-sec" id="vider">Tout effacer</button>
+    <button class="btn-enr" id="enregistrer">💾 Enregistrer</button>
     <button class="btn-imp" id="imprimer">🖨 Imprimer</button>
   </div>
 
@@ -275,6 +281,16 @@ tfoot .grand{text-align:right;font-weight:800;font-size:20px;color:var(--tot);
       tbody.innerHTML=''; creerLigne(); creerLigne(); creerLigne();
       recalcul(); sauver();
     }
+  });
+  var etat = document.getElementById('etat'), minuteur;
+  function confirmerEnregistrement(){
+    etat.textContent = '✓ Enregistré';
+    etat.classList.add('vu');
+    clearTimeout(minuteur);
+    minuteur = setTimeout(function(){ etat.classList.remove('vu'); }, 2500);
+  }
+  document.getElementById('enregistrer').addEventListener('click', function(){
+    sauver(); confirmerEnregistrement();
   });
   document.getElementById('imprimer').addEventListener('click', function(){ window.print(); });
   CHAMPS.forEach(function(id){
