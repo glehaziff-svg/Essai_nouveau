@@ -211,12 +211,6 @@ tfoot .grand{text-align:right;font-weight:800;font-size:20px;color:var(--tot);
           <img id="sigImg" alt="Signature" hidden>
         </div>
         <div class="sig-legende">Signature</div>
-        <div class="sig-actions">
-          <label class="btn-mini">📷 Importer ma signature
-            <input type="file" id="sigInput" accept="image/*" hidden>
-          </label>
-          <button type="button" class="btn-mini" id="sigEffacer" hidden>Retirer</button>
-        </div>
       </div>
     </div>
 
@@ -276,16 +270,15 @@ tfoot .grand{text-align:right;font-weight:800;font-size:20px;color:var(--tot);
   var CHAMPS = ['nom','vehicule','trajet','periode','tauxdefaut','faita','faitle'];
 
   var sigImg = document.getElementById('sigImg'),
-      sigAuto = document.getElementById('sigAuto'),
-      sigEffacer = document.getElementById('sigEffacer');
+      sigAuto = document.getElementById('sigAuto');
 
   function montrerSignature(src){
     if(src){
       sigImg.src = src; sigImg.hidden = false;
-      sigAuto.hidden = true; sigEffacer.hidden = false;
+      sigAuto.hidden = true;
     } else {
       sigImg.removeAttribute('src'); sigImg.hidden = true;
-      sigAuto.hidden = false; sigEffacer.hidden = true;
+      sigAuto.hidden = false;
     }
   }
 
@@ -320,29 +313,6 @@ tfoot .grand{text-align:right;font-weight:800;font-size:20px;color:var(--tot);
     }
     recalcul();
   }
-
-  // Importer une image de signature (photo / scan), redimensionnée pour rester légère
-  document.getElementById('sigInput').addEventListener('change', function(e){
-    var f = e.target.files && e.target.files[0];
-    if(!f) return;
-    var lecteur = new FileReader();
-    lecteur.onload = function(ev){
-      var im = new Image();
-      im.onload = function(){
-        var maxL = 500, ech = Math.min(1, maxL / im.width);
-        var c = document.createElement('canvas');
-        c.width = Math.round(im.width * ech); c.height = Math.round(im.height * ech);
-        c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
-        var url;
-        try{ url = c.toDataURL('image/png'); }catch(err){ url = ev.target.result; }
-        montrerSignature(url); sauver();
-      };
-      im.onerror = function(){ montrerSignature(ev.target.result); sauver(); };
-      im.src = ev.target.result;
-    };
-    lecteur.readAsDataURL(f);
-  });
-  sigEffacer.addEventListener('click', function(){ montrerSignature(null); sauver(); });
 
   document.getElementById('ajouter').addEventListener('click', function(){
     creerLigne(); sauver();
