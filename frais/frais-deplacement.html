@@ -69,7 +69,7 @@ input:focus{outline:2px solid var(--bleu-fort);outline-offset:0;border-color:var
 
 /* ---- tableau ---- */
 .tablebox{overflow-x:auto}
-table{width:100%;border-collapse:collapse;font-size:15px}
+table{width:100%;border-collapse:collapse;font-size:15px;table-layout:fixed}
 thead th{background:var(--bandeau);color:#fff;font-size:13px;font-weight:600;
   text-transform:uppercase;letter-spacing:.03em;padding:.6rem .5rem;text-align:left}
 thead th.num{text-align:right}
@@ -193,11 +193,11 @@ tfoot .grand{text-align:right;font-weight:800;font-size:20px;color:var(--tot);
     <table>
       <thead>
         <tr>
-          <th style="width:96px">Date</th>
+          <th style="width:92px">Date</th>
           <th>Motif</th>
-          <th class="num" style="width:100px">Prix du km</th>
-          <th class="num" style="width:100px">Nombre de km</th>
-          <th class="num" style="width:120px">Total</th>
+          <th class="num" style="width:74px">Prix du km</th>
+          <th class="num" style="width:74px">Nombre de km</th>
+          <th class="num" style="width:96px">Total</th>
           <th class="sup-h" style="width:34px"></th>
         </tr>
       </thead>
