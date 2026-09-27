@@ -1,4 +1,7 @@
 <title>Frais de déplacement</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sacramento&display=swap">
 <style>
 :root{
   --fond:#EEF1F4; --papier:#FFFFFF; --encre:#1C2733; --doux:#5A6B7B;
@@ -93,6 +96,19 @@ tfoot .grand{text-align:right;font-weight:800;font-size:20px;color:var(--tot);
 .pied{display:flex;justify-content:space-between;gap:30px;margin-top:34px}
 .pied .bloc{flex:1;font-size:14px;color:var(--doux)}
 .pied .ligne-sig{margin-top:52px;border-top:1px solid var(--trait-fort);padding-top:6px}
+.sigbloc{display:flex;flex-direction:column;align-items:stretch}
+.sig-zone{min-height:80px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px}
+.sig-zone img{max-height:90px;max-width:100%;object-fit:contain}
+.sig-auto{font-family:"Sacramento",cursive;font-size:44px;line-height:1;
+  color:#1B3A63;transform:rotate(-3deg);padding:0 8px 6px;white-space:nowrap}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .sig-auto{color:#8FB4D9}}
+:root[data-theme="dark"] .sig-auto{color:#8FB4D9}
+.sig-legende{border-top:1px solid var(--trait-fort);padding-top:6px;font-size:14px;color:var(--doux)}
+.sig-actions{display:flex;gap:8px;margin-top:8px}
+.btn-mini{font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;
+  border:1px solid var(--trait-fort);background:var(--papier);color:var(--encre);
+  border-radius:5px;padding:.35rem .6rem;display:inline-block}
+.btn-mini:hover{background:var(--fond)}
 .faitle input{border-bottom:1px solid var(--trait-fort);border-top:0;border-left:0;border-right:0;
   border-radius:0;padding:2px 4px}
 
@@ -103,6 +119,7 @@ tfoot .grand{text-align:right;font-weight:800;font-size:20px;color:var(--tot);
   .outils{display:none !important}
   .corps{padding:0}
   .btn-sup{display:none !important}
+  .sig-actions{display:none !important}
   td.sup{display:none}
   th.sup-h{display:none}
   input,.taux{background:#fff !important;color:#000 !important;border-color:#999 !important}
@@ -188,8 +205,18 @@ tfoot .grand{text-align:right;font-weight:800;font-size:20px;color:var(--tot);
         Fait à <input id="faita" style="width:150px" placeholder="ville">
         &nbsp;le <input id="faitle" style="width:130px" placeholder="jj/mm/aaaa">
       </div>
-      <div class="bloc">
-        <div class="ligne-sig">Signature</div>
+      <div class="bloc sigbloc">
+        <div class="sig-zone">
+          <span class="sig-auto" id="sigAuto">Gérald Le Haziff</span>
+          <img id="sigImg" alt="Signature" hidden>
+        </div>
+        <div class="sig-legende">Signature</div>
+        <div class="sig-actions">
+          <label class="btn-mini">📷 Importer ma signature
+            <input type="file" id="sigInput" accept="image/*" hidden>
+          </label>
+          <button type="button" class="btn-mini" id="sigEffacer" hidden>Retirer</button>
+        </div>
       </div>
     </div>
 
@@ -248,8 +275,22 @@ tfoot .grand{text-align:right;font-weight:800;font-size:20px;color:var(--tot);
 
   var CHAMPS = ['nom','vehicule','trajet','periode','tauxdefaut','faita','faitle'];
 
+  var sigImg = document.getElementById('sigImg'),
+      sigAuto = document.getElementById('sigAuto'),
+      sigEffacer = document.getElementById('sigEffacer');
+
+  function montrerSignature(src){
+    if(src){
+      sigImg.src = src; sigImg.hidden = false;
+      sigAuto.hidden = true; sigEffacer.hidden = false;
+    } else {
+      sigImg.removeAttribute('src'); sigImg.hidden = true;
+      sigAuto.hidden = false; sigEffacer.hidden = true;
+    }
+  }
+
   function sauver(){
-    var data = { entete:{}, lignes:[] };
+    var data = { entete:{}, lignes:[], signature:null };
     CHAMPS.forEach(function(id){ data.entete[id] = document.getElementById(id).value; });
     tbody.querySelectorAll('tr').forEach(function(tr){
       data.lignes.push({
@@ -259,6 +300,7 @@ tfoot .grand{text-align:right;font-weight:800;font-size:20px;color:var(--tot);
         km: tr.querySelector('.km').value
       });
     });
+    if(!sigImg.hidden && sigImg.src) data.signature = sigImg.src;
     try{ localStorage.setItem(CLE, JSON.stringify(data)); }catch(e){}
   }
 
@@ -270,6 +312,7 @@ tfoot .grand{text-align:right;font-weight:800;font-size:20px;color:var(--tot);
         if(data.entete[id]!=null) document.getElementById(id).value = data.entete[id];
       });
     }
+    if(data && data.signature) montrerSignature(data.signature);
     if(data && data.lignes && data.lignes.length){
       data.lignes.forEach(creerLigne);
     } else {
@@ -277,6 +320,29 @@ tfoot .grand{text-align:right;font-weight:800;font-size:20px;color:var(--tot);
     }
     recalcul();
   }
+
+  // Importer une image de signature (photo / scan), redimensionnée pour rester légère
+  document.getElementById('sigInput').addEventListener('change', function(e){
+    var f = e.target.files && e.target.files[0];
+    if(!f) return;
+    var lecteur = new FileReader();
+    lecteur.onload = function(ev){
+      var im = new Image();
+      im.onload = function(){
+        var maxL = 500, ech = Math.min(1, maxL / im.width);
+        var c = document.createElement('canvas');
+        c.width = Math.round(im.width * ech); c.height = Math.round(im.height * ech);
+        c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+        var url;
+        try{ url = c.toDataURL('image/png'); }catch(err){ url = ev.target.result; }
+        montrerSignature(url); sauver();
+      };
+      im.onerror = function(){ montrerSignature(ev.target.result); sauver(); };
+      im.src = ev.target.result;
+    };
+    lecteur.readAsDataURL(f);
+  });
+  sigEffacer.addEventListener('click', function(){ montrerSignature(null); sauver(); });
 
   document.getElementById('ajouter').addEventListener('click', function(){
     creerLigne(); sauver();
