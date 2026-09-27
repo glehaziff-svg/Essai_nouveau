@@ -129,12 +129,14 @@ tfoot .grand{text-align:right;font-weight:800;font-size:20px;color:var(--tot);
   tfoot .grand{background:#E4F1EA !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   /* largeurs de colonnes fixées à l'impression : le motif prend la place restante */
   table{table-layout:fixed;width:100%}
-  thead th:nth-child(1){width:74px}   /* Date */
-  thead th:nth-child(3){width:60px}   /* Prix du km */
-  thead th:nth-child(4){width:56px}   /* Nombre de km */
-  thead th:nth-child(5){width:78px}   /* Total */
+  thead th:nth-child(1){width:100px}  /* Date */
+  thead th:nth-child(3){width:62px}   /* Prix du km */
+  thead th:nth-child(4){width:58px}   /* Nombre de km */
+  thead th:nth-child(5){width:80px}   /* Total */
   thead th, tbody td{font-size:10.5pt;padding:3px 4px}
   tbody input{border:0 !important;padding:2px}
+  /* la date ne doit pas être rognée */
+  tbody input.date{width:100% !important;min-width:92px;letter-spacing:0}
   /* le motif s'affiche en entier, sur autant de lignes que nécessaire */
   tbody .motif{border:0 !important;padding:2px;min-height:0 !important;
     white-space:pre-wrap;overflow-wrap:anywhere;font-size:10.5pt;line-height:1.25}
@@ -163,7 +165,7 @@ tfoot .grand{text-align:right;font-weight:800;font-size:20px;color:var(--tot);
     <div class="entete">
       <div>
         <h1>Note de frais de déplacement</h1>
-        <p class="sous">Indemnités kilométriques</p>
+        <p class="sous">Indemnités kilométriques · modèle du 27/09/2026</p>
       </div>
       <div style="text-align:right;font-size:14px;color:var(--doux)">
         <div class="champ" style="align-items:flex-end">
