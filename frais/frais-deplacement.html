@@ -67,9 +67,12 @@ thead th{background:var(--bandeau);color:#fff;font-size:13px;font-weight:600;
   text-transform:uppercase;letter-spacing:.03em;padding:.6rem .5rem;text-align:left}
 thead th.num{text-align:right}
 tbody td{border-bottom:1px solid var(--trait);padding:4px 5px;vertical-align:middle}
-tbody input{width:100%;border:1px solid transparent;background:transparent;border-radius:4px}
-tbody input:hover{border-color:var(--trait)}
+tbody input,tbody textarea{width:100%;border:1px solid transparent;background:transparent;border-radius:4px}
+tbody input:hover,tbody textarea:hover{border-color:var(--trait)}
 tbody input.num{text-align:right;font-variant-numeric:tabular-nums}
+tbody textarea.motif{font-family:var(--sans);font-size:15px;color:var(--encre);
+  resize:vertical;min-height:2.9em;line-height:1.35;padding:.4rem .5rem}
+tbody textarea.motif:focus{outline:2px solid var(--bleu-fort);border-color:var(--bleu-fort)}
 td.total{text-align:right;font-variant-numeric:tabular-nums;font-weight:600;
   white-space:nowrap;padding-right:8px}
 td.sup{width:34px;text-align:center}
@@ -130,17 +133,13 @@ tfoot .grand{text-align:right;font-weight:800;font-size:20px;color:var(--tot);
     </div>
 
     <div class="ident">
-      <div class="champ">
+      <div class="champ large">
         <label for="nom">Nom et prénom</label>
         <input id="nom" placeholder="Votre nom" value="LE HAZIFF Gérald">
       </div>
-      <div class="champ">
-        <label for="orga">Organisme / Association</label>
-        <input id="orga" placeholder="(facultatif)">
-      </div>
       <div class="champ large">
-        <label for="vehicule">Véhicule (marque, immatriculation, puissance fiscale)</label>
-        <input id="vehicule" placeholder="(facultatif)">
+        <label for="vehicule">Véhicule</label>
+        <input id="vehicule" value="Toyota Yaris hybride 100H">
       </div>
     </div>
 
@@ -154,9 +153,9 @@ tfoot .grand{text-align:right;font-weight:800;font-size:20px;color:var(--tot);
     <table>
       <thead>
         <tr>
-          <th style="width:120px">Date</th>
+          <th style="width:96px">Date</th>
           <th>Motif</th>
-          <th class="num" style="width:110px">Prix du km</th>
+          <th class="num" style="width:100px">Prix du km</th>
           <th class="num" style="width:100px">Nombre de km</th>
           <th class="num" style="width:120px">Total</th>
           <th class="sup-h" style="width:34px"></th>
@@ -189,7 +188,7 @@ tfoot .grand{text-align:right;font-weight:800;font-size:20px;color:var(--tot);
 <script>
 (function(){
   var MOTIF_DEFAUT = "Restructuration logiciel informatique module : Administration 1/6";
-  var CLE = "frais-deplacement-v1";
+  var CLE = "frais-deplacement-v2";
   var tbody = document.getElementById('lignes');
 
   function nombre(v){
@@ -207,7 +206,7 @@ tfoot .grand{text-align:right;font-weight:800;font-size:20px;color:var(--tot);
     var tr = document.createElement('tr');
     tr.innerHTML =
       '<td><input class="date" type="date"></td>' +
-      '<td><input class="motif" type="text"></td>' +
+      '<td><textarea class="motif" rows="2"></textarea></td>' +
       '<td><input class="prix num" type="text" inputmode="decimal"></td>' +
       '<td><input class="km num" type="text" inputmode="decimal"></td>' +
       '<td class="total">0,00 €</td>' +
@@ -236,7 +235,7 @@ tfoot .grand{text-align:right;font-weight:800;font-size:20px;color:var(--tot);
     document.getElementById('grandtotal').textContent = euros(total);
   }
 
-  var CHAMPS = ['nom','orga','vehicule','periode','tauxdefaut','faita','faitle'];
+  var CHAMPS = ['nom','vehicule','periode','tauxdefaut','faita','faitle'];
 
   function sauver(){
     var data = { entete:{}, lignes:[] };
