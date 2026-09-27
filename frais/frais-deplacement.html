@@ -122,9 +122,21 @@ tfoot .grand{text-align:right;font-weight:800;font-size:20px;color:var(--tot);
   .sig-actions{display:none !important}
   td.sup{display:none}
   th.sup-h{display:none}
-  input,.taux{background:#fff !important;color:#000 !important;border-color:#999 !important}
+  input,textarea,.taux{background:#fff !important;color:#000 !important;border-color:#999 !important}
   thead th{background:#1F5C8B !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   tfoot .grand{background:#E4F1EA !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  /* largeurs de colonnes fixées à l'impression : le motif prend la place restante */
+  table{table-layout:fixed;width:100%}
+  thead th:nth-child(1){width:78px}   /* Date */
+  thead th:nth-child(3){width:66px}   /* Prix du km */
+  thead th:nth-child(4){width:62px}   /* Nombre de km */
+  thead th:nth-child(5){width:82px}   /* Total */
+  thead th, tbody td{font-size:10.5pt;padding:3px 4px}
+  tbody input, tbody textarea{border:0 !important;padding:2px}
+  /* le motif s'affiche en entier, sur autant de lignes que nécessaire */
+  tbody textarea.motif{height:auto !important;min-height:0 !important;overflow:visible !important;
+    white-space:pre-wrap;word-break:break-word;resize:none;font-size:10.5pt;line-height:1.25}
+  tr{break-inside:avoid}
   @page{margin:1.4cm}
 }
 </style>
@@ -250,9 +262,21 @@ tfoot .grand{text-align:right;font-weight:800;font-size:20px;color:var(--tot);
     tr.querySelector('.btn-sup').addEventListener('click', function(){
       tr.remove(); recalcul(); sauver();
     });
+    var motif = tr.querySelector('.motif');
+    motif.addEventListener('input', function(){ ajusterMotif(motif); });
     tr.addEventListener('input', function(){ recalcul(); sauver(); });
     tbody.appendChild(tr);
+    ajusterMotif(motif);
     return tr;
+  }
+
+  // Le motif grandit pour afficher tout le texte (écran et impression)
+  function ajusterMotif(ta){
+    ta.style.height = 'auto';
+    ta.style.height = (ta.scrollHeight + 2) + 'px';
+  }
+  function ajusterTousMotifs(){
+    tbody.querySelectorAll('textarea.motif').forEach(ajusterMotif);
   }
 
   function recalcul(){
@@ -312,7 +336,10 @@ tfoot .grand{text-align:right;font-weight:800;font-size:20px;color:var(--tot);
       creerLigne(); creerLigne(); creerLigne();
     }
     recalcul();
+    ajusterTousMotifs();
   }
+  window.addEventListener('beforeprint', ajusterTousMotifs);
+  if(document.fonts && document.fonts.ready){ document.fonts.ready.then(ajusterTousMotifs); }
 
   document.getElementById('ajouter').addEventListener('click', function(){
     creerLigne(); sauver();
