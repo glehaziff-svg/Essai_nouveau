@@ -74,12 +74,14 @@ thead th{background:var(--bandeau);color:#fff;font-size:13px;font-weight:600;
   text-transform:uppercase;letter-spacing:.03em;padding:.6rem .5rem;text-align:left}
 thead th.num{text-align:right}
 tbody td{border-bottom:1px solid var(--trait);padding:4px 5px;vertical-align:middle}
-tbody input,tbody textarea{width:100%;border:1px solid transparent;background:transparent;border-radius:4px}
-tbody input:hover,tbody textarea:hover{border-color:var(--trait)}
+tbody input{width:100%;border:1px solid transparent;background:transparent;border-radius:4px}
+tbody input:hover{border-color:var(--trait)}
 tbody input.num{text-align:right;font-variant-numeric:tabular-nums}
-tbody textarea.motif{font-family:var(--sans);font-size:15px;color:var(--encre);
-  resize:vertical;min-height:2.9em;line-height:1.35;padding:.4rem .5rem}
-tbody textarea.motif:focus{outline:2px solid var(--bleu-fort);border-color:var(--bleu-fort)}
+tbody .motif{font-family:var(--sans);font-size:15px;color:var(--encre);line-height:1.35;
+  padding:.4rem .5rem;border:1px solid transparent;border-radius:4px;min-height:1.7em;
+  white-space:pre-wrap;overflow-wrap:anywhere}
+tbody .motif:hover{border-color:var(--trait)}
+tbody .motif:focus{outline:2px solid var(--bleu-fort);border-color:var(--bleu-fort)}
 td.total{text-align:right;font-variant-numeric:tabular-nums;font-weight:600;
   white-space:nowrap;padding-right:8px}
 td.sup{width:34px;text-align:center}
@@ -122,20 +124,24 @@ tfoot .grand{text-align:right;font-weight:800;font-size:20px;color:var(--tot);
   .sig-actions{display:none !important}
   td.sup{display:none}
   th.sup-h{display:none}
-  input,textarea,.taux{background:#fff !important;color:#000 !important;border-color:#999 !important}
+  input,.motif,.taux{background:#fff !important;color:#000 !important;border-color:#999 !important}
   thead th{background:#1F5C8B !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   tfoot .grand{background:#E4F1EA !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   /* largeurs de colonnes fixées à l'impression : le motif prend la place restante */
   table{table-layout:fixed;width:100%}
-  thead th:nth-child(1){width:78px}   /* Date */
-  thead th:nth-child(3){width:66px}   /* Prix du km */
-  thead th:nth-child(4){width:62px}   /* Nombre de km */
-  thead th:nth-child(5){width:82px}   /* Total */
+  thead th:nth-child(1){width:74px}   /* Date */
+  thead th:nth-child(3){width:60px}   /* Prix du km */
+  thead th:nth-child(4){width:56px}   /* Nombre de km */
+  thead th:nth-child(5){width:78px}   /* Total */
   thead th, tbody td{font-size:10.5pt;padding:3px 4px}
-  tbody input, tbody textarea{border:0 !important;padding:2px}
+  tbody input{border:0 !important;padding:2px}
   /* le motif s'affiche en entier, sur autant de lignes que nécessaire */
-  tbody textarea.motif{height:auto !important;min-height:0 !important;overflow:visible !important;
-    white-space:pre-wrap;word-break:break-word;resize:none;font-size:10.5pt;line-height:1.25}
+  tbody .motif{border:0 !important;padding:2px;min-height:0 !important;
+    white-space:pre-wrap;overflow-wrap:anywhere;font-size:10.5pt;line-height:1.25}
+  /* champ date épuré (sans flèches ni icône) */
+  input[type=date]::-webkit-calendar-picker-indicator,
+  input[type=date]::-webkit-inner-spin-button,
+  input[type=date]::-webkit-clear-button{display:none !important}
   tr{break-inside:avoid}
   @page{margin:1.4cm}
 }
@@ -250,33 +256,21 @@ tfoot .grand{text-align:right;font-weight:800;font-size:20px;color:var(--tot);
     var tr = document.createElement('tr');
     tr.innerHTML =
       '<td><input class="date" type="date"></td>' +
-      '<td><textarea class="motif" rows="2"></textarea></td>' +
+      '<td><div class="motif" contenteditable="true"></div></td>' +
       '<td><input class="prix num" type="text" inputmode="decimal"></td>' +
       '<td><input class="km num" type="text" inputmode="decimal"></td>' +
       '<td class="total">0,00 €</td>' +
       '<td class="sup"><button class="btn-sup" title="Supprimer la ligne" aria-label="Supprimer">✕</button></td>';
     tr.querySelector('.date').value  = d.date  || '';
-    tr.querySelector('.motif').value = (d.motif!=null ? d.motif : MOTIF_DEFAUT);
+    tr.querySelector('.motif').textContent = (d.motif!=null ? d.motif : MOTIF_DEFAUT);
     tr.querySelector('.prix').value  = (d.prix!=null ? d.prix : document.getElementById('tauxdefaut').value);
     tr.querySelector('.km').value    = d.km || '';
     tr.querySelector('.btn-sup').addEventListener('click', function(){
       tr.remove(); recalcul(); sauver();
     });
-    var motif = tr.querySelector('.motif');
-    motif.addEventListener('input', function(){ ajusterMotif(motif); });
     tr.addEventListener('input', function(){ recalcul(); sauver(); });
     tbody.appendChild(tr);
-    ajusterMotif(motif);
     return tr;
-  }
-
-  // Le motif grandit pour afficher tout le texte (écran et impression)
-  function ajusterMotif(ta){
-    ta.style.height = 'auto';
-    ta.style.height = (ta.scrollHeight + 2) + 'px';
-  }
-  function ajusterTousMotifs(){
-    tbody.querySelectorAll('textarea.motif').forEach(ajusterMotif);
   }
 
   function recalcul(){
@@ -312,7 +306,7 @@ tfoot .grand{text-align:right;font-weight:800;font-size:20px;color:var(--tot);
     tbody.querySelectorAll('tr').forEach(function(tr){
       data.lignes.push({
         date: tr.querySelector('.date').value,
-        motif: tr.querySelector('.motif').value,
+        motif: tr.querySelector('.motif').textContent,
         prix: tr.querySelector('.prix').value,
         km: tr.querySelector('.km').value
       });
@@ -336,10 +330,7 @@ tfoot .grand{text-align:right;font-weight:800;font-size:20px;color:var(--tot);
       creerLigne(); creerLigne(); creerLigne();
     }
     recalcul();
-    ajusterTousMotifs();
   }
-  window.addEventListener('beforeprint', ajusterTousMotifs);
-  if(document.fonts && document.fonts.ready){ document.fonts.ready.then(ajusterTousMotifs); }
 
   document.getElementById('ajouter').addEventListener('click', function(){
     creerLigne(); sauver();
