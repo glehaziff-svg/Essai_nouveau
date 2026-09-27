@@ -48,6 +48,20 @@ button{font-family:var(--sans);font-size:15px;font-weight:600;cursor:pointer;
 .etat.vu{opacity:1}
 button:focus-visible{outline:3px solid var(--bleu-fort);outline-offset:2px}
 
+/* ---- barre "Mes notes" (ne s'imprime pas) ---- */
+.notesbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;
+  padding:10px 22px;background:var(--fond);border-bottom:1px solid var(--trait);}
+.notesbar .nb-lbl{font-size:13px;font-weight:600;color:var(--doux)}
+.notesbar select{font-family:var(--sans);font-size:14px;padding:.45rem .5rem;
+  border:1px solid var(--trait-fort);border-radius:5px;background:var(--papier);
+  color:var(--encre);max-width:230px}
+.grandit2{flex:1}
+.btn-mini2{font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer;
+  border:1px solid var(--trait-fort);background:var(--papier);color:var(--encre);
+  border-radius:5px;padding:.45rem .7rem}
+.btn-mini2:hover{filter:brightness(.96)}
+.btn-mini2:focus-visible{outline:3px solid var(--bleu-fort);outline-offset:2px}
+
 /* ---- corps ---- */
 .corps{padding:26px 30px 34px}
 .entete{display:flex;justify-content:space-between;align-items:flex-start;
@@ -119,6 +133,7 @@ tfoot .grand{text-align:right;font-weight:800;font-size:20px;color:var(--tot);
   body{background:#fff;font-size:12pt}
   .feuille{margin:0;border:0;box-shadow:none;max-width:none;border-radius:0}
   .outils{display:none !important}
+  .notesbar{display:none !important}
   .corps{padding:0}
   .btn-sup{display:none !important}
   .sig-actions{display:none !important}
@@ -158,6 +173,15 @@ tfoot .grand{text-align:right;font-weight:800;font-size:20px;color:var(--tot);
     <button class="btn-sec" id="vider">Tout effacer</button>
     <button class="btn-enr" id="enregistrer">💾 Enregistrer</button>
     <button class="btn-imp" id="imprimer">🖨 Imprimer</button>
+  </div>
+
+  <div class="notesbar">
+    <span class="nb-lbl">Mes notes&nbsp;:</span>
+    <select id="notesList"><option value="">— choisir une note —</option></select>
+    <button class="btn-mini2" id="ouvrirNote">Ouvrir</button>
+    <button class="btn-mini2" id="supprNote">🗑 Supprimer</button>
+    <span class="grandit2"></span>
+    <button class="btn-mini2" id="enregistrerSous">🗂 Enregistrer sous…</button>
   </div>
 
   <div class="corps">
@@ -302,7 +326,8 @@ tfoot .grand{text-align:right;font-weight:800;font-size:20px;color:var(--tot);
     }
   }
 
-  function sauver(){
+  // Rassemble toutes les données de la fiche dans un objet
+  function collecter(){
     var data = { entete:{}, lignes:[], signature:null };
     CHAMPS.forEach(function(id){ data.entete[id] = document.getElementById(id).value; });
     tbody.querySelectorAll('tr').forEach(function(tr){
@@ -314,24 +339,62 @@ tfoot .grand{text-align:right;font-weight:800;font-size:20px;color:var(--tot);
       });
     });
     if(!sigImg.hidden && sigImg.src) data.signature = sigImg.src;
-    try{ localStorage.setItem(CLE, JSON.stringify(data)); }catch(e){}
+    return data;
   }
 
-  function charger(){
-    var data = null;
-    try{ data = JSON.parse(localStorage.getItem(CLE)); }catch(e){}
-    if(data && data.entete){
+  // Remplit la fiche à partir d'un objet de données
+  function appliquer(data){
+    if(!data) return;
+    if(data.entete){
       CHAMPS.forEach(function(id){
         if(data.entete[id]!=null) document.getElementById(id).value = data.entete[id];
       });
     }
-    if(data && data.signature) montrerSignature(data.signature);
-    if(data && data.lignes && data.lignes.length){
+    if(data.signature) montrerSignature(data.signature);
+    tbody.innerHTML = '';
+    if(data.lignes && data.lignes.length){
       data.lignes.forEach(creerLigne);
     } else {
       creerLigne(); creerLigne(); creerLigne();
     }
     recalcul();
+  }
+
+  // (1) Sauvegarde automatique de la note en cours (reprise à la réouverture)
+  function sauver(){
+    try{ localStorage.setItem(CLE, JSON.stringify(collecter())); }catch(e){}
+  }
+
+  function charger(){
+    var data = null;
+    try{ data = JSON.parse(localStorage.getItem(CLE)); }catch(e){}
+    if(data){
+      appliquer(data);
+    } else {
+      creerLigne(); creerLigne(); creerLigne();
+      recalcul();
+    }
+  }
+
+  // (3) Gestion des notes enregistrées (plusieurs notes rouvrables)
+  var NOTES_CLE = "frais-notes-v1";
+  function lireNotes(){
+    try{ return JSON.parse(localStorage.getItem(NOTES_CLE)) || {}; }catch(e){ return {}; }
+  }
+  function ecrireNotes(n){
+    try{ localStorage.setItem(NOTES_CLE, JSON.stringify(n)); }catch(e){}
+  }
+  function rafraichirListeNotes(selection){
+    var sel = document.getElementById('notesList');
+    var notes = lireNotes();
+    var noms = Object.keys(notes).sort();
+    sel.innerHTML = '<option value="">— choisir une note —</option>';
+    noms.forEach(function(nom){
+      var o = document.createElement('option');
+      o.value = nom; o.textContent = nom;
+      if(nom === selection) o.selected = true;
+      sel.appendChild(o);
+    });
   }
 
   document.getElementById('ajouter').addEventListener('click', function(){
@@ -344,16 +407,56 @@ tfoot .grand{text-align:right;font-weight:800;font-size:20px;color:var(--tot);
     }
   });
   var etat = document.getElementById('etat'), minuteur;
-  function confirmerEnregistrement(){
-    etat.textContent = '✓ Enregistré';
+  function message(txt){
+    etat.textContent = txt;
     etat.classList.add('vu');
     clearTimeout(minuteur);
-    minuteur = setTimeout(function(){ etat.classList.remove('vu'); }, 2500);
+    minuteur = setTimeout(function(){ etat.classList.remove('vu'); }, 3000);
   }
   document.getElementById('enregistrer').addEventListener('click', function(){
-    sauver(); confirmerEnregistrement();
+    sauver(); message('✓ Enregistré');
   });
   document.getElementById('imprimer').addEventListener('click', function(){ window.print(); });
+
+  // (3) Enregistrer sous… : mémorise la note courante sous un nom
+  document.getElementById('enregistrerSous').addEventListener('click', function(){
+    var suggestion = document.getElementById('periode').value || '';
+    var nom = prompt('Sous quel nom enregistrer cette note ?\n(ex : Septembre 2026)', suggestion);
+    if(nom == null) return;
+    nom = nom.trim();
+    if(!nom){ alert('Veuillez saisir un nom.'); return; }
+    var notes = lireNotes();
+    if(notes[nom] && !confirm('Une note « ' + nom + ' » existe déjà. La remplacer ?')) return;
+    notes[nom] = collecter();
+    ecrireNotes(notes);
+    rafraichirListeNotes(nom);
+    sauver();
+    message('✓ Note « ' + nom + ' » enregistrée');
+  });
+
+  // (3) Ouvrir une note enregistrée
+  document.getElementById('ouvrirNote').addEventListener('click', function(){
+    var nom = document.getElementById('notesList').value;
+    if(!nom){ alert('Choisissez d\'abord une note dans la liste.'); return; }
+    var notes = lireNotes();
+    if(!notes[nom]){ alert('Note introuvable.'); return; }
+    if(!confirm('Ouvrir la note « ' + nom + ' » ? Les saisies actuelles non enregistrées seront remplacées.')) return;
+    appliquer(notes[nom]);
+    sauver();
+    message('✓ Note « ' + nom + ' » ouverte');
+  });
+
+  // (3) Supprimer une note enregistrée
+  document.getElementById('supprNote').addEventListener('click', function(){
+    var nom = document.getElementById('notesList').value;
+    if(!nom){ alert('Choisissez d\'abord une note à supprimer.'); return; }
+    if(!confirm('Supprimer définitivement la note « ' + nom + ' » ?\n(La note en cours à l\'écran n\'est pas effacée.)')) return;
+    var notes = lireNotes();
+    delete notes[nom];
+    ecrireNotes(notes);
+    rafraichirListeNotes();
+    message('🗑 Note « ' + nom + ' » supprimée');
+  });
   CHAMPS.forEach(function(id){
     document.getElementById(id).addEventListener('input', sauver);
   });
@@ -366,5 +469,6 @@ tfoot .grand{text-align:right;font-weight:800;font-size:20px;color:var(--tot);
   });
 
   charger();
+  rafraichirListeNotes();
 })();
 </script>
