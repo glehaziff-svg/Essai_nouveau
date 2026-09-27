@@ -149,6 +149,11 @@ tfoot .grand{text-align:right;font-weight:800;font-size:20px;color:var(--tot);
       </div>
     </div>
 
+    <div class="champ large" style="margin-bottom:18px">
+      <label for="trajet">Trajet</label>
+      <input id="trajet" value="37 rue du 65ème RI 56000 Vannes à 3 rue du verger 56400 Auray">
+    </div>
+
     <div class="taux">
       <label for="tauxdefaut">Prix du km par défaut (€)</label>
       <input id="tauxdefaut" class="num" type="text" inputmode="decimal" value="0,60">
@@ -241,7 +246,7 @@ tfoot .grand{text-align:right;font-weight:800;font-size:20px;color:var(--tot);
     document.getElementById('grandtotal').textContent = euros(total);
   }
 
-  var CHAMPS = ['nom','vehicule','periode','tauxdefaut','faita','faitle'];
+  var CHAMPS = ['nom','vehicule','trajet','periode','tauxdefaut','faita','faitle'];
 
   function sauver(){
     var data = { entete:{}, lignes:[] };
