@@ -160,6 +160,9 @@ tfoot .grand{text-align:right;font-weight:800;font-size:20px;color:var(--tot);
   input[type=date]::-webkit-inner-spin-button,
   input[type=date]::-webkit-clear-button{display:none !important}
   tr{break-inside:avoid}
+  /* le bloc date + signature ne doit pas être coupé entre deux pages */
+  .pied, .sigbloc, .faitle{break-inside:avoid;page-break-inside:avoid}
+  .pied{margin-top:20px}
   @page{margin:1.4cm}
 }
 </style>
