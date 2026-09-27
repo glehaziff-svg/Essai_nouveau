@@ -162,8 +162,22 @@ tfoot .grand{text-align:right;font-weight:800;font-size:20px;color:var(--tot);
   tr{break-inside:avoid}
   /* le bloc date + signature ne doit pas être coupé entre deux pages */
   .pied, .sigbloc, .faitle{break-inside:avoid;page-break-inside:avoid}
-  .pied{margin-top:20px}
-  @page{margin:1.4cm}
+  /* ---- compactage pour tenir sur une seule page (jusqu'à 8 lignes) ---- */
+  h1{font-size:18pt}
+  .entete{padding-bottom:6px;margin-bottom:10px;border-bottom-width:2px}
+  .entete .sous{font-size:9pt;margin-top:2px}
+  .ident{gap:6px 16px;margin-bottom:8px}
+  label{font-size:8.5pt}
+  input{font-size:10.5pt;padding:2px 5px !important}
+  .corps > .champ.large{margin-bottom:8px !important}
+  .taux{margin-bottom:8px;padding:6px 10px}
+  thead th, tbody td{padding:2px 5px}
+  tfoot td{padding:.4rem .5rem;font-size:12pt}
+  .sig-zone{min-height:52px;padding-bottom:2px}
+  .sig-zone img{max-height:62px}
+  .pied .ligne-sig{margin-top:36px}
+  .pied{margin-top:12px}
+  @page{margin:1.1cm}
 }
 </style>
 
