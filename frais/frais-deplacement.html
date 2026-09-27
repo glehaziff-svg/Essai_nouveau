@@ -146,7 +146,7 @@ tfoot .grand{text-align:right;font-weight:800;font-size:20px;color:var(--tot);
     <div class="taux">
       <label for="tauxdefaut">Prix du km par défaut (€)</label>
       <input id="tauxdefaut" class="num" type="text" inputmode="decimal" value="0,60">
-      <span style="color:var(--doux);font-size:13px">— appliqué aux nouvelles lignes ; modifiable ligne par ligne.</span>
+      <span style="color:var(--doux);font-size:13px">— s'applique à toutes les lignes ; reste modifiable ligne par ligne ensuite.</span>
     </div>
 
     <div class="tablebox">
@@ -279,6 +279,13 @@ tfoot .grand{text-align:right;font-weight:800;font-size:20px;color:var(--tot);
   document.getElementById('imprimer').addEventListener('click', function(){ window.print(); });
   CHAMPS.forEach(function(id){
     document.getElementById(id).addEventListener('input', sauver);
+  });
+
+  // Changer le prix du km en haut applique le nouveau tarif à toutes les lignes
+  document.getElementById('tauxdefaut').addEventListener('input', function(){
+    var t = this.value;
+    tbody.querySelectorAll('tr .prix').forEach(function(champ){ champ.value = t; });
+    recalcul(); sauver();
   });
 
   charger();
