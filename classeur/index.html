@@ -738,6 +738,18 @@ function openDoc(id){
     <div class="modal-head"><h3>${id?"Modifier le papier":"Nouveau papier"}</h3><div class="grow"></div><button class="btn icon" data-close>✕</button></div>
     <div class="modal-body">
       <div class="field"><label>Nom du document</label><input type="text" id="f_title" placeholder="Ex : Compte rendu cardiologie, Carte Vitale, Avis d'imposition 2025" value="${esc(d.title)}"></div>
+      <div class="field"><label>Numérisation / pièces jointes <span class="hint">(PDF, photos — restent sur l'appareil)</span></label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button type="button" class="btn primary hidden" id="f_scannow" style="font-size:15px;padding:11px 16px">🖨️ Numériser maintenant</button>
+          <button type="button" class="btn small" id="f_scanbtn">📎 Joindre un scan / fichier</button>
+          <button type="button" class="btn small" id="f_cambtn">📷 Photographier</button>
+        </div>
+        <div class="filebox" id="f_drop" style="margin-top:8px">Ou glissez-déposez ici vos fichiers numérisés (PDF ou JPG)</div>
+        <input type="file" id="f_file" class="hidden" accept="image/*,application/pdf" multiple>
+        <input type="file" id="f_cam" class="hidden" accept="image/*" capture="environment">
+        <div id="f_attach"></div>
+        <div class="hint" style="margin-top:6px">Avec IJ Scan Utility : numérisez en PDF (ou JPG), puis joignez le fichier ici. Les photos sont compressées automatiquement.</div>
+      </div>
       <div class="field"><label>Catégorie</label><div class="catpick" id="f_cat">${catOpts}</div></div>
       <div class="two">
         <div class="field"><label>Type de document</label><select id="f_type">${typeOpts}</select></div>
@@ -750,18 +762,6 @@ function openDoc(id){
         <div class="field"><label>Échéance / Expiration <span class="hint">(optionnel)</span></label><input type="date" id="f_expiry" value="${esc(d.expiry)}"></div>
       </div>
       <div class="field"><label>Notes <span class="hint">(résumé, ce qu'il faut retenir…)</span></label><textarea id="f_notes" rows="2">${esc(d.notes)}</textarea></div>
-      <div class="field"><label>Numérisation / pièces jointes <span class="hint">(PDF, photos — restent sur l'appareil)</span></label>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button type="button" class="btn small primary hidden" id="f_scannow">🖨️ Numériser maintenant</button>
-          <button type="button" class="btn small" id="f_scanbtn">📎 Joindre un scan / fichier</button>
-          <button type="button" class="btn small" id="f_cambtn">📷 Photographier</button>
-        </div>
-        <div class="filebox" id="f_drop" style="margin-top:8px">Ou glissez-déposez ici vos fichiers numérisés (PDF ou JPG)</div>
-        <input type="file" id="f_file" class="hidden" accept="image/*,application/pdf" multiple>
-        <input type="file" id="f_cam" class="hidden" accept="image/*" capture="environment">
-        <div id="f_attach"></div>
-        <div class="hint" style="margin-top:6px">Avec IJ Scan Utility : numérisez en PDF (ou JPG), puis joignez le fichier ici. Les photos sont compressées automatiquement.</div>
-      </div>
     </div>
     <div class="modal-foot">
       ${id?'<button class="btn danger" data-del>Supprimer</button>':""}
