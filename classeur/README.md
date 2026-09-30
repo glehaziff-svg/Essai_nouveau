@@ -33,3 +33,13 @@ pour l'avoir aussi sur votre téléphone. Ajoutez la page à l'écran d'accueil 
   ce n'est volontairement pas inclus pour que l'application reste autonome et privée.
 - Les rappels par notification ne fonctionnent que lorsque la page est ouverte. Pour des rappels garantis,
   utilisez le bouton Google Agenda ou l'export `.ics`.
+
+## Lancer comme une application (fichiers exécutables)
+
+- **Windows** : double-cliquez sur `Mon Classeur.bat`
+- **Mac** : double-cliquez sur `Mon Classeur.command` (au premier lancement : clic droit → Ouvrir)
+- **Linux** : `./mon-classeur.sh`
+
+L'application s'ouvre dans sa propre fenêtre, sans barre d'adresse, avec ses données isolées
+(Chrome, Edge ou Brave nécessaire ; sinon le navigateur par défaut est utilisé).
+Astuce Windows : clic droit sur le `.bat` → *Envoyer vers* → *Bureau (créer un raccourci)*.
