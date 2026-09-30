@@ -3,6 +3,8 @@ on:
   push:
     paths: ["classeur/**", ".github/workflows/build-classeur.yml"]
   workflow_dispatch:
+permissions:
+  contents: write
 jobs:
   build:
     runs-on: windows-latest
@@ -13,7 +15,19 @@ jobs:
         with: { node-version: 22 }
       - run: npm install --no-audit --no-fund
       - run: npm run build:win
+      - name: Zip
+        shell: pwsh
+        run: Compress-Archive -Path "dist/Mon Classeur-win32-x64" -DestinationPath "Mon-Classeur-Windows.zip" -Force
       - uses: actions/upload-artifact@v4
         with:
           name: Mon-Classeur-Windows-x64
-          path: classeur/dist/Mon Classeur-win32-x64
+          path: classeur/Mon-Classeur-Windows.zip
+      - name: Publier la version (lien de téléchargement fixe)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: classeur-v1.0.${{ github.run_number }}
+          name: Mon Classeur — version ${{ github.run_number }}
+          body: |
+            Application Windows « Mon Classeur ». Décompressez le zip puis lancez **Mon Classeur.exe**.
+          files: classeur/Mon-Classeur-Windows.zip
+          make_latest: true
