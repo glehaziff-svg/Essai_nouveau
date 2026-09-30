@@ -320,6 +320,10 @@
         <div><b>Rappels par notification</b><div class="muted small">Alerte à l'approche d'un rendez-vous (page ouverte).</div></div>
         <button class="btn small" id="setNotif">Vérifier</button>
       </div>
+      <div class="settings-row hidden" id="rowScanDir">
+        <div><b>Dossier des scans</b><div class="muted small">Le dossier où IJ Scan Utility enregistre les fichiers (Paramètres → Numérisation document → Enregistrer dans). Actuel : <code id="scanDirLabel">…</code></div></div>
+        <button class="btn small" id="btnScanDir">Choisir…</button>
+      </div>
       <div class="settings-row">
         <div><b>Délai de rappel</b><div class="muted small">Combien de temps avant le rendez-vous.</div></div>
         <select id="setLead" style="width:auto;min-width:150px">
@@ -678,7 +682,8 @@ function openDoc(id){
       <div class="field"><label>Notes <span class="hint">(résumé, ce qu'il faut retenir…)</span></label><textarea id="f_notes" rows="2">${esc(d.notes)}</textarea></div>
       <div class="field"><label>Numérisation / pièces jointes <span class="hint">(PDF, photos — restent sur l'appareil)</span></label>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button type="button" class="btn small" id="f_scanbtn">🖨️ Joindre un scan / fichier</button>
+          <button type="button" class="btn small primary hidden" id="f_scannow">🖨️ Numériser maintenant</button>
+          <button type="button" class="btn small" id="f_scanbtn">📎 Joindre un scan / fichier</button>
           <button type="button" class="btn small" id="f_cambtn">📷 Photographier</button>
         </div>
         <div class="filebox" id="f_drop" style="margin-top:8px">Ou glissez-déposez ici vos fichiers numérisés (PDF ou JPG)</div>
@@ -710,6 +715,11 @@ function openDoc(id){
     }
   }
   refreshAtt();
+  window._scanSink = async (f)=>{ const blob=await (await fetch(f.dataUrl)).blob(); await handleFiles([new File([blob], f.name, {type:f.type})]); toast("Scan « "+f.name+" » joint ✓"); };
+  if(window.classeur){
+    const sn=modal.querySelector("#f_scannow"); sn.classList.remove("hidden");
+    sn.onclick=async()=>{ const r=await classeur.scanStart(); toast(r.launched?"IJ Scan Utility lancé — numérisez, le fichier sera joint automatiquement.":"IJ Scan Utility introuvable : numérisez avec votre logiciel, le fichier sera récupéré dans "+r.dir); };
+  }
   modal.querySelectorAll("#f_cat .opt").forEach(o=>o.onclick=()=>{cat=o.dataset.cat; modal.querySelectorAll("#f_cat .opt").forEach(x=>x.classList.toggle("sel",x===o));});
   const fileInput=modal.querySelector("#f_file"), camInput=modal.querySelector("#f_cam"), drop=modal.querySelector("#f_drop");
   modal.querySelector("#f_scanbtn").onclick=()=>fileInput.click();
@@ -759,7 +769,7 @@ function mountModal(node){
   document.addEventListener("keydown",escClose);
   setTimeout(()=>{ const f=node.querySelector("input,textarea"); if(f) f.focus(); },50);
 }
-function closeModal(){ document.getElementById("modalRoot").innerHTML=""; document.removeEventListener("keydown",escClose); }
+function closeModal(){ window._scanSink=null; if(window.classeur) classeur.scanStop(); document.getElementById("modalRoot").innerHTML=""; document.removeEventListener("keydown",escClose); }
 function escClose(e){ if(e.key==="Escape") closeModal(); }
 
 /* ---------- Google Agenda / ICS ---------- */
@@ -803,6 +813,10 @@ function buildICS(list){
 }
 function icsEsc(s){ return String(s).replace(/\\/g,"\\\\").replace(/;/g,"\\;").replace(/,/g,"\\,").replace(/\n/g,"\\n"); }
 function download(name,content,type){
+  if(window.classeur){
+    const rd=new FileReader(); rd.onload=()=>classeur.saveFile(name, rd.result, [{name:"Fichier",extensions:[name.split(".").pop()]}]).then(p=>{ if(p) toast("Enregistré : "+p); });
+    rd.readAsDataURL(new Blob([content],{type:type||"text/plain"})); return;
+  }
   const blob=new Blob([content],{type:type||"text/plain"}); const url=URL.createObjectURL(blob);
   const a=document.createElement("a"); a.href=url; a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
@@ -948,6 +962,7 @@ function wipeAll(){
 /* ---------- Notifications / Rappels ---------- */
 function updateNotifNotice(){
   const box=document.getElementById("notifNotice");
+  if(window.classeur){ box.classList.add("hidden"); return; }
   if(!("Notification" in window)){ box.classList.add("hidden"); return; }
   box.classList.toggle("hidden", Notification.permission!=="default");
 }
@@ -959,15 +974,14 @@ function askNotif(){
   });
 }
 function checkReminders(){
-  if(!("Notification" in window) || Notification.permission!=="granted") return;
+  if(!window.classeur && (!("Notification" in window) || Notification.permission!=="granted")) return;
   const lead=SETTINGS.lead||1440; const now=Date.now();
   SETTINGS.notifiedIds = SETTINGS.notifiedIds||[];
   RDV.forEach(r=>{
     const t=rdvDate(r).getTime(); const trigger=t-lead*60000;
     if(now>=trigger && now<t && !SETTINGS.notifiedIds.includes(r.id)){
-      try{
-        new Notification("Rappel : "+r.title, {body:fmtDate(rdvDate(r))+(r.time?" à "+fmtTime(r.time):"")+(r.place?" — "+r.place:""), tag:r.id});
-      }catch(e){}
+      const body=fmtDate(rdvDate(r))+(r.time?" à "+fmtTime(r.time):"")+(r.place?" — "+r.place:"");
+      try{ if(window.classeur) classeur.notify("Rappel : "+r.title, body); else new Notification("Rappel : "+r.title, {body, tag:r.id}); }catch(e){}
       SETTINGS.notifiedIds.push(r.id); save(LS.set,SETTINGS);
     }
   });
@@ -1024,6 +1038,14 @@ function renderAll(){ renderDash(); renderRdv(); renderDocs(); renderCal(); rend
   lead.onchange=()=>{ SETTINGS.lead=parseInt(lead.value,10); save(LS.set,SETTINGS); toast("Délai de rappel mis à jour."); };
   document.getElementById("setDark").onchange=function(){ SETTINGS.dark=this.checked; save(LS.set,SETTINGS); applyTheme(); };
 
+  if(window.classeur){
+    document.getElementById("rowScanDir").classList.remove("hidden");
+    classeur.scanGetDir().then(d=>{ document.getElementById("scanDirLabel").textContent=d; });
+    document.getElementById("btnScanDir").onclick=()=>classeur.scanChooseDir().then(d=>{ document.getElementById("scanDirLabel").textContent=d; toast("Dossier des scans mis à jour."); });
+    classeur.onScanFile(f=>{ if(!window._scanSink){ switchTab("docs"); openDoc(); } window._scanSink && window._scanSink(f); });
+    classeur.onScanRequest(()=>{ switchTab("docs"); openDoc(); document.getElementById("f_scannow").click(); });
+    document.querySelector(".app > section#view-set p.muted").textContent="Mon Classeur — application de bureau, sans compte ni serveur.";
+  }
   renderAll();
   migrateFiles().catch(()=>{});
   updateNotifNotice();

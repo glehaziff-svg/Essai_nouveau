@@ -36,7 +36,26 @@ pour l'avoir aussi sur votre téléphone. Ajoutez la page à l'écran d'accueil 
 - Les rappels par notification ne fonctionnent que lorsque la page est ouverte. Pour des rappels garantis,
   utilisez le bouton Google Agenda ou l'export `.ics`.
 
-## Lancer comme une application (fichiers exécutables)
+## Version bureau (Electron) — `Mon Classeur.exe`
+
+Application Windows complète, sans navigateur. En plus de tout ce qui précède :
+
+- **🖨️ Numériser maintenant** (dans la fiche d'un papier, ou clic droit sur l'icône de la zone de notification) :
+  lance IJ Scan Utility et **joint automatiquement** le scan dès qu'il apparaît dans le dossier des scans
+  (réglable dans *Réglages → Dossier des scans* ; par défaut *Documents*, comme IJ Scan Utility).
+- L'application reste dans la **zone de notification** (près de l'horloge) quand on ferme la fenêtre :
+  les **rappels de rendez-vous** s'affichent même fenêtre fermée. *Quitter* via le clic droit sur l'icône.
+- Sauvegardes et exports `.ics` via une vraie boîte de dialogue « Enregistrer sous ».
+
+**Installer** : décompressez `Mon-Classeur-Windows-x64.zip` dans un dossier (ex. `C:\Mon Classeur`) et lancez
+`Mon Classeur.exe`. Pas d'installation ; créez un raccourci sur le Bureau si vous le souhaitez.
+Windows SmartScreen peut avertir au premier lancement (application non signée) : *Informations complémentaires* →
+*Exécuter quand même*. Les données sont dans `%APPDATA%\mon-classeur`.
+
+**Reconstruire le .exe** : `npm install && npm run build:win` dans ce dossier (résultat dans `dist/`), ou via
+l'action GitHub *Build Mon Classeur* (artefact téléchargeable dans l'onglet Actions).
+
+## Lancer comme une application (fichiers exécutables, sans Electron)
 
 - **Windows** : double-cliquez sur `Mon Classeur.bat`
 - **Mac** : double-cliquez sur `Mon Classeur.command` (au premier lancement : clic droit → Ouvrir)
