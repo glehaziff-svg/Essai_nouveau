@@ -828,7 +828,7 @@ function exportICSAll(){
 
 /* ---------- Import Google Agenda (.ics) ---------- */
 const CAT_HINTS = {
-  med:["dr ","dr.","docteur","médecin","medecin","dentiste","cardio","ophtalmo","dermato","kiné","kine","radio","irm","scanner","analyse","labo","hôpital","hopital","clinique","pharmacie","vaccin","gynéco","gyneco","orl","pédiatre","pediatre","psy","infirm","rdv médical","consultation","échographie","echographie","mutuelle","cpam","ameli"],
+  med:["dr ","dr.","docteur","médecin","medecin","dentiste","cardio","ophtalmo","dermato","kiné","kine","radio","irm","scanner","analyse","labo","hôpital","hopital","clinique","pharmacie","vaccin","gynéco","gyneco","orl","chba","fibroscan","ergothérap","ergotherap","neuro","angio","fauteuil","acide folique","med reeducative","pédiatre","pediatre","psy","infirm","rdv médical","consultation","échographie","echographie","mutuelle","cpam","ameli"],
   admin:["impôt","impot","mairie","préfecture","prefecture","caf","pôle emploi","pole emploi","france travail","urssaf","retraite","carsat","notaire","avocat","tribunal","assurance","permis","passeport","carte d'identité","identité","identite","sécu","secu","administratif","dossier"],
   fin:["banque","crédit","credit","prêt","pret","conseiller","comptable","virement","loyer","facture","edf","engie","orange","free","sfr","bouygues"],
 };
@@ -896,9 +896,17 @@ function expandRecurrence(start, rrule, exdates){
   }
   return out;
 }
+/* « Kiné 11h », « Scanner 15h45 » : l'heure notée dans le titre prime sur l'horaire Google (souvent mis plus tôt pour être prévenu) */
+function timeFromTitle(title, start){
+  const m=title.match(/(?:^|\s)(\d{1,2})\s*h\s*(\d{2})?(?=\s|$)/i); if(!m) return start.time;
+  const h=parseInt(m[1],10), mn=m[2]?parseInt(m[2],10):0; if(h>23||mn>59) return start.time;
+  return pad(h)+":"+pad(mn);
+}
 function importICS(text){
   const events=parseICS(text);
-  const since=new Date(); since.setDate(since.getDate()-30); since.setHours(0,0,0,0); // on garde 30 jours de passé
+  const since=new Date(); since.setDate(since.getDate()-30); since.setHours(0,0,0,0); // par défaut : 30 jours de passé
+  const hasOld=events.some(ev=>{ if(!ev.DTSTART) return false; const st=parseICSDate(ev.DTSTART.val,ev.DTSTART.params); return st && new Date(st.date+"T00:00")<since; });
+  if(hasOld && confirm("Ce fichier contient des rendez-vous passés.\n\nOK = importer aussi l'historique (utile pour le suivi médical)\nAnnuler = seulement les rendez-vous récents et à venir")) since.setFullYear(1970);
   const existing=new Set(RDV.map(r=>r.gKey).filter(Boolean));
   let added=0, dup=0, skipped=0;
   events.forEach(ev=>{
@@ -911,6 +919,7 @@ function importICS(text){
     const place=ev.LOCATION?icsUnescape(ev.LOCATION.val).trim():"";
     let notes=ev.DESCRIPTION?icsUnescape(ev.DESCRIPTION.val).replace(/<[^>]+>/g,"").trim():""; if(notes.length>400) notes=notes.slice(0,400)+"…";
     const cat=guessCat(title+" "+place+" "+notes);
+    start.time=timeFromTitle(title, start);
     const occ = ev.RRULE ? expandRecurrence(start, ev.RRULE.val, exdates) : [start];
     occ.forEach(o=>{
       if(new Date(o.date+"T"+(o.time||"00:00"))<since){ skipped++; return; }
