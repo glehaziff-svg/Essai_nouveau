@@ -19,6 +19,8 @@ pour l'avoir aussi sur votre téléphone. Ajoutez la page à l'écran d'accueil 
 - **Retrouver un document** : la recherche ignore les accents et accepte plusieurs mots
   (`martin compte` trouve « Compte rendu — Dr Martin »). Filtres par catégorie et par type, tri par date / échéance / nom.
 - **Rappels** : notification du navigateur avant chaque rendez-vous (délai réglable : 1 h à 2 jours), page ouverte.
+- **Récupérer ses rendez-vous Google Agenda** : import d'un fichier `.ics` (récurrences développées, catégorie devinée,
+  doublons ignorés) — voir plus bas.
 - **Google Agenda** : bouton 🗓️ sur chaque rendez-vous → « Ajouter à Google Agenda » ; export `.ics` de tout l'agenda
   (Réglages) importable dans Google Agenda, Apple Calendrier, Outlook. Une fois dans Google Agenda, c'est Google qui
   vous rappelle sur le téléphone.
@@ -57,3 +59,14 @@ Astuce Windows : clic droit sur le `.bat` → *Envoyer vers* → *Bureau (créer
 Sur téléphone, le bouton **📷 Photographier** ouvre directement l'appareil photo.
 Les scans sont stockés dans le navigateur (IndexedDB, plusieurs centaines de Mo possibles) et inclus
 dans le fichier de **Sauvegarde**.
+
+## Récupérer mes rendez-vous Google Agenda
+
+1. Sur un ordinateur, ouvrez [calendar.google.com](https://calendar.google.com) → ⚙️ **Paramètres** → menu de gauche
+   **Importer et exporter** → **Exporter**. Un fichier `.zip` se télécharge.
+2. Décompressez-le : il contient un fichier `.ics` par agenda (ex. `votre.nom@gmail.com.ics`).
+3. Dans Mon Classeur → *Rendez-vous* → **⬆︎ Google Agenda** (ou *Réglages* → *Importer .ics*) → choisissez le `.ics`.
+
+Les rendez-vous des 30 derniers jours et à venir sont importés (les récurrents sur 12 mois), avec une catégorie
+devinée d'après le titre (Dr, dentiste → médical ; impôts, CAF → administratif ; banque → finances) que vous pouvez
+corriger. Vous pouvez réimporter plus tard : les rendez-vous déjà présents ne sont pas dupliqués.

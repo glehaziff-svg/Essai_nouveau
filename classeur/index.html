@@ -249,6 +249,7 @@
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
         <input type="search" id="rdvSearch" placeholder="Rechercher un rendez-vous…">
       </label>
+      <button class="btn" onclick="document.getElementById('icsFile').click()" title="Importer un fichier .ics exporté de Google Agenda">⬆︎ Google Agenda</button>
       <button class="btn primary" onclick="openRdv()">+ Nouveau rendez-vous</button>
     </div>
     <div class="filters" id="rdvFilters" style="margin-bottom:14px">
@@ -343,6 +344,10 @@
         <button class="btn small" onclick="document.getElementById('importFile').click()">⬆︎ Restaurer</button>
       </div>
       <div class="settings-row">
+        <div><b>Récupérer mes rendez-vous Google Agenda</b><div class="muted small">Sur Google Agenda (ordinateur) : ⚙️ Paramètres → <i>Importer et exporter</i> → <b>Exporter</b>. Décompressez le .zip, puis importez le fichier <code>.ics</code> ici. Les doublons sont ignorés.</div></div>
+        <button class="btn small primary" onclick="document.getElementById('icsFile').click()">⬆︎ Importer .ics</button>
+      </div>
+      <div class="settings-row">
         <div><b>Exporter vers Google Agenda / .ics</b><div class="muted small">Fichier .ics importable dans Google Agenda, Apple Calendrier, Outlook…</div></div>
         <button class="btn small" onclick="exportICSAll()">🗓️ Exporter .ics</button>
       </div>
@@ -358,6 +363,7 @@
 </div>
 
 <input type="file" id="importFile" accept="application/json" class="hidden">
+<input type="file" id="icsFile" accept=".ics,text/calendar" class="hidden" multiple>
 <div id="modalRoot"></div>
 <div class="toast" id="toast"></div>
 
@@ -492,6 +498,7 @@ function rdvRow(r){
   else if(n<=2) badge=`<span class="badge b-warn">${relLabel(n)}</span>`;
   else if(n<=7) badge=`<span class="badge b-soon">${relLabel(n)}</span>`;
   const meta=[fmtDate(d), r.time?fmtTime(r.time):null, r.person, r.place].filter(Boolean).join(" · ");
+  if(r.source==="google") badge+=` <span class="badge" style="background:var(--line);color:var(--muted)" title="Importé de Google Agenda">G</span>`;
   return `<div class="row">
     <div class="body">
       <div class="title">${esc(r.title||"Rendez-vous")} ${catChip(r.cat)} ${badge}</div>
@@ -804,6 +811,109 @@ function exportICSAll(){
   download("mon-classeur-agenda.ics", buildICS(RDV), "text/calendar");
   toast("Fichier .ics créé — importez-le dans Google Agenda.");
 }
+
+/* ---------- Import Google Agenda (.ics) ---------- */
+const CAT_HINTS = {
+  med:["dr ","dr.","docteur","médecin","medecin","dentiste","cardio","ophtalmo","dermato","kiné","kine","radio","irm","scanner","analyse","labo","hôpital","hopital","clinique","pharmacie","vaccin","gynéco","gyneco","orl","pédiatre","pediatre","psy","infirm","rdv médical","consultation","échographie","echographie","mutuelle","cpam","ameli"],
+  admin:["impôt","impot","mairie","préfecture","prefecture","caf","pôle emploi","pole emploi","france travail","urssaf","retraite","carsat","notaire","avocat","tribunal","assurance","permis","passeport","carte d'identité","identité","identite","sécu","secu","administratif","dossier"],
+  fin:["banque","crédit","credit","prêt","pret","conseiller","comptable","virement","loyer","facture","edf","engie","orange","free","sfr","bouygues"],
+};
+function guessCat(text){
+  const t=norm(text);
+  for(const [cat,words] of Object.entries(CAT_HINTS)) if(words.some(w=>t.includes(norm(w)))) return cat;
+  return "autre";
+}
+function icsUnescape(v){ return v.replace(/\\n/gi,"\n").replace(/\\,/g,",").replace(/\\;/g,";").replace(/\\\\/g,"\\"); }
+function parseICSDate(val, params){
+  // Retourne {date:"YYYY-MM-DD", time:"HH:MM"|""}
+  if(/^\d{8}$/.test(val) || (params.VALUE==="DATE")){
+    return {date:val.slice(0,4)+"-"+val.slice(4,6)+"-"+val.slice(6,8), time:""};
+  }
+  const m=val.match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})?(Z)?$/); if(!m) return null;
+  let d;
+  if(m[7]) d=new Date(Date.UTC(+m[1],m[2]-1,+m[3],+m[4],+m[5],+(m[6]||0)));     // UTC → heure locale
+  else d=new Date(+m[1],m[2]-1,+m[3],+m[4],+m[5],+(m[6]||0));                   // TZID / flottant : on suppose l'heure locale
+  return {date:d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()), time:pad(d.getHours())+":"+pad(d.getMinutes())};
+}
+function parseICS(text){
+  const lines=text.replace(/\r\n?/g,"\n").split("\n");
+  const unfolded=[];
+  for(const l of lines){ if(/^[ \t]/.test(l) && unfolded.length) unfolded[unfolded.length-1]+=l.slice(1); else unfolded.push(l); }
+  const events=[]; let cur=null;
+  for(const l of unfolded){
+    if(l==="BEGIN:VEVENT"){ cur={}; continue; }
+    if(l==="END:VEVENT"){ if(cur) events.push(cur); cur=null; continue; }
+    if(!cur) continue;
+    const i=l.indexOf(":"); if(i<0) continue;
+    const head=l.slice(0,i), val=l.slice(i+1);
+    const [name,...ps]=head.split(";"); const params={};
+    ps.forEach(p=>{ const [k,v]=p.split("="); params[k]=v; });
+    cur[name]={val,params};
+  }
+  return events;
+}
+const DOWMAP={SU:0,MO:1,TU:2,WE:3,TH:4,FR:5,SA:6};
+function expandRecurrence(start, rrule, exdates){
+  // Développe une règle simple (FREQ/INTERVAL/COUNT/UNTIL/BYDAY) sur 12 mois max
+  const out=[]; if(!rrule) return [start];
+  const r={}; rrule.split(";").forEach(p=>{ const [k,v]=p.split("="); r[k]=v; });
+  const interval=parseInt(r.INTERVAL||"1",10), horizon=new Date(); horizon.setFullYear(horizon.getFullYear()+1);
+  let until=null; if(r.UNTIL){ const u=parseICSDate(r.UNTIL,{}); if(u) until=new Date(u.date+"T23:59"); }
+  const count=r.COUNT?parseInt(r.COUNT,10):Infinity;
+  const base=new Date(start.date+"T"+(start.time||"00:00"));
+  const days=(r.FREQ==="WEEKLY" && r.BYDAY)? r.BYDAY.split(",").map(d=>DOWMAP[d.slice(-2)]).filter(x=>x!=null) : null;
+  let d=new Date(base), n=0, guard=0;
+  while(n<count && d<=horizon && guard++<800){
+    if(until && d>until) break;
+    const iso=d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+    if(!exdates.has(iso)) out.push({date:iso,time:start.time});
+    n++;
+    if(r.FREQ==="DAILY") d.setDate(d.getDate()+interval);
+    else if(r.FREQ==="WEEKLY"){
+      if(days && days.length>1){ // prochain jour de la liste
+        let next=null;
+        for(let k=1;k<=7*interval;k++){ const c=new Date(d); c.setDate(d.getDate()+k); if(days.includes(c.getDay()) && (k<7 || ((k-((7+c.getDay()-base.getDay())%7))/7)%interval===0)){ next=c; break; } }
+        d=next||new Date(d.setDate(d.getDate()+7*interval));
+      } else d.setDate(d.getDate()+7*interval);
+    }
+    else if(r.FREQ==="MONTHLY") d.setMonth(d.getMonth()+interval);
+    else if(r.FREQ==="YEARLY") d.setFullYear(d.getFullYear()+interval);
+    else break;
+  }
+  return out;
+}
+function importICS(text){
+  const events=parseICS(text);
+  const since=new Date(); since.setDate(since.getDate()-30); since.setHours(0,0,0,0); // on garde 30 jours de passé
+  const existing=new Set(RDV.map(r=>r.gKey).filter(Boolean));
+  let added=0, dup=0, skipped=0;
+  events.forEach(ev=>{
+    if(!ev.DTSTART || !ev.SUMMARY) { skipped++; return; }
+    if(ev.STATUS && ev.STATUS.val==="CANCELLED"){ skipped++; return; }
+    const start=parseICSDate(ev.DTSTART.val, ev.DTSTART.params); if(!start){ skipped++; return; }
+    const exdates=new Set(); if(ev.EXDATE) ev.EXDATE.val.split(",").forEach(v=>{ const x=parseICSDate(v,ev.EXDATE.params); if(x) exdates.add(x.date); });
+    const evUid=(ev.UID&&ev.UID.val)||uid();
+    const title=icsUnescape(ev.SUMMARY.val).trim();
+    const place=ev.LOCATION?icsUnescape(ev.LOCATION.val).trim():"";
+    let notes=ev.DESCRIPTION?icsUnescape(ev.DESCRIPTION.val).replace(/<[^>]+>/g,"").trim():""; if(notes.length>400) notes=notes.slice(0,400)+"…";
+    const cat=guessCat(title+" "+place+" "+notes);
+    const occ = ev.RRULE ? expandRecurrence(start, ev.RRULE.val, exdates) : [start];
+    occ.forEach(o=>{
+      if(new Date(o.date+"T"+(o.time||"00:00"))<since){ skipped++; return; }
+      const key=evUid+"|"+o.date;
+      if(existing.has(key)){ dup++; return; }
+      RDV.push({id:uid(), title, cat, date:o.date, time:o.time, person:"", place, notes, gKey:key, source:"google"});
+      existing.add(key); added++;
+    });
+  });
+  persist(); renderAll();
+  toast(added+" rendez-vous importé(s)"+(dup?", "+dup+" déjà présent(s)":"")+(skipped?", "+skipped+" ignoré(s) (passés/annulés)":"")+".");
+  if(added) switchTab("rdv");
+}
+document.getElementById("icsFile").onchange=function(){
+  const files=Array.from(this.files||[]); this.value="";
+  files.forEach(f=>{ const rd=new FileReader(); rd.onload=()=>{ try{ if(!/BEGIN:VCALENDAR/.test(rd.result)) throw 0; importICS(rd.result); }catch(e){ toast("« "+f.name+" » n'est pas un fichier .ics valide."); } }; rd.readAsText(f); });
+};
 
 /* ---------- Sauvegarde / Restauration ---------- */
 async function exportData(){
