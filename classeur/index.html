@@ -249,7 +249,8 @@
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
         <input type="search" id="rdvSearch" placeholder="Rechercher un rendez-vous…">
       </label>
-      <button class="btn" onclick="document.getElementById('icsFile').click()" title="Importer un fichier .ics exporté de Google Agenda">⬆︎ Google Agenda</button>
+      <button class="btn hidden" id="btnGcalSync" onclick="gcalSync(false)" title="Récupérer les rendez-vous de Google Agenda">🔄 Google Agenda</button>
+      <button class="btn" onclick="document.getElementById('icsFile').click()" title="Importer un fichier .ics exporté de Google Agenda">⬆︎ Fichier .ics</button>
       <button class="btn primary" onclick="openRdv()">+ Nouveau rendez-vous</button>
     </div>
     <div class="filters" id="rdvFilters" style="margin-bottom:14px">
@@ -350,6 +351,18 @@
       <div class="settings-row">
         <div><b>Restaurer une sauvegarde</b><div class="muted small">Remplace les données actuelles par un fichier de sauvegarde.</div></div>
         <button class="btn small" onclick="document.getElementById('importFile').click()">⬆︎ Restaurer</button>
+      </div>
+      <div class="settings-row hidden" id="rowGcal" style="flex-direction:column;align-items:stretch;gap:10px">
+        <div><b>Synchronisation Google Agenda</b><div class="muted small">Collez l'<b>adresse secrète au format iCal</b> de votre agenda : sur <a href="https://calendar.google.com/calendar/r/settings" target="_blank">calendar.google.com</a> → ⚙️ Paramètres → à gauche, votre agenda (<i>glehaziff@gmail.com</i>) → tout en bas, <i>Adresse secrète au format iCal</i> → copier. Lecture seule ; l'adresse reste sur cet ordinateur.</div></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <input type="text" id="gcalUrl" placeholder="https://calendar.google.com/calendar/ical/…/private-…/basic.ics" style="flex:1;min-width:240px">
+          <button class="btn small" id="btnGcalSave">Enregistrer</button>
+          <button class="btn small primary" onclick="gcalSync(false)">🔄 Synchroniser maintenant</button>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+          <div class="muted small">Synchroniser automatiquement au démarrage puis toutes les heures. <span id="gcalStatus"></span></div>
+          <label class="switch"><input type="checkbox" id="setGcalAuto"><span class="slider"></span></label>
+        </div>
       </div>
       <div class="settings-row">
         <div><b>Récupérer mes rendez-vous Google Agenda</b><div class="muted small">Sur Google Agenda (ordinateur) : ⚙️ Paramètres → <i>Importer et exporter</i> → <b>Exporter</b>. Décompressez le .zip, puis importez le fichier <code>.ics</code> ici. Les doublons sont ignorés.</div></div>
@@ -1002,11 +1015,14 @@ function timeFromTitle(title, start){
   const h=parseInt(m[1],10), mn=m[2]?parseInt(m[2],10):0; if(h>23||mn>59) return start.time;
   return pad(h)+":"+pad(mn);
 }
-function importICS(text){
+function importICS(text, opts){
+  opts=opts||{};
   const events=parseICS(text);
   const since=new Date(); since.setDate(since.getDate()-30); since.setHours(0,0,0,0); // par défaut : 30 jours de passé
   const hasOld=events.some(ev=>{ if(!ev.DTSTART) return false; const st=parseICSDate(ev.DTSTART.val,ev.DTSTART.params); return st && new Date(st.date+"T00:00")<since; });
-  if(hasOld && confirm("Ce fichier contient des rendez-vous passés.\n\nOK = importer aussi l'historique (utile pour le suivi médical)\nAnnuler = seulement les rendez-vous récents et à venir")) since.setFullYear(1970);
+  let includePast=opts.includePast;
+  if(includePast==null && hasOld) includePast=confirm("Ce fichier contient des rendez-vous passés.\n\nOK = importer aussi l'historique (utile pour le suivi médical)\nAnnuler = seulement les rendez-vous récents et à venir");
+  if(includePast) since.setFullYear(1970);
   const existing=new Set(RDV.map(r=>r.gKey).filter(Boolean));
   let added=0, dup=0, skipped=0;
   events.forEach(ev=>{
@@ -1030,8 +1046,24 @@ function importICS(text){
     });
   });
   persist(); renderAll();
-  toast(added+" rendez-vous importé(s)"+(dup?", "+dup+" déjà présent(s)":"")+(skipped?", "+skipped+" ignoré(s) (passés/annulés)":"")+".");
-  if(added) switchTab("rdv");
+  if(!opts.quiet || added) toast(added+" rendez-vous importé(s)"+(dup?", "+dup+" déjà présent(s)":"")+(skipped?", "+skipped+" ignoré(s) (passés/annulés)":"")+".");
+  if(added && !opts.quiet) switchTab("rdv");
+  return {added,dup,skipped};
+}
+/* ---------- Synchronisation Google Agenda (version bureau) ---------- */
+let gcalSyncing=false;
+async function gcalSync(auto){
+  if(!window.classeur || gcalSyncing) return;
+  const url=await classeur.gcalGetUrl(); if(!url){ if(!auto){ toast("Enregistrez d'abord l'adresse de votre agenda (Réglages)."); switchTab("set"); } return; }
+  gcalSyncing=true; const st=document.getElementById("gcalStatus"); if(!auto) toast("Connexion à Google Agenda…");
+  try{
+    const r=await classeur.gcalFetch();
+    if(!r.ok){ if(!auto) toast("Google Agenda : "+r.error); st.textContent="Dernière tentative : échec — "+r.error; return; }
+    const first=!SETTINGS.gcalSyncedOnce;
+    const res=importICS(r.text, {includePast: first ? null : false, quiet: auto});
+    SETTINGS.gcalSyncedOnce=true; SETTINGS.gcalLast=Date.now(); save(LS.set,SETTINGS);
+    st.textContent="Dernière synchronisation : "+new Date().toLocaleString("fr-FR",{dateStyle:"short",timeStyle:"short"})+" ("+res.added+" nouveau(x)).";
+  } finally { gcalSyncing=false; }
 }
 document.getElementById("icsFile").onchange=function(){
   const files=Array.from(this.files||[]); this.value="";
@@ -1155,6 +1187,13 @@ function renderAll(){ renderDash(); renderRdv(); renderDocs(); renderCal(); rend
     document.getElementById("rowScanDir").classList.remove("hidden");
     classeur.scanGetDir().then(d=>{ document.getElementById("scanDirLabel").textContent=d; });
     document.getElementById("btnScanDir").onclick=()=>classeur.scanChooseDir().then(d=>{ document.getElementById("scanDirLabel").textContent=d; toast("Dossier des scans mis à jour."); });
+    document.getElementById("rowGcal").classList.remove("hidden"); document.getElementById("btnGcalSync").classList.remove("hidden");
+    const urlInp=document.getElementById("gcalUrl"), autoChk=document.getElementById("setGcalAuto");
+    classeur.gcalGetUrl().then(u=>{ urlInp.value=u; });
+    document.getElementById("btnGcalSave").onclick=async()=>{ const r=await classeur.gcalSetUrl(urlInp.value); toast(r.ok?"Adresse enregistrée ✓":r.error); if(r.ok && urlInp.value.trim()) gcalSync(false); };
+    autoChk.checked=SETTINGS.gcalAuto!==false; autoChk.onchange=()=>{ SETTINGS.gcalAuto=autoChk.checked; save(LS.set,SETTINGS); };
+    if(SETTINGS.gcalLast) document.getElementById("gcalStatus").textContent="Dernière synchronisation : "+new Date(SETTINGS.gcalLast).toLocaleString("fr-FR",{dateStyle:"short",timeStyle:"short"})+".";
+    if(SETTINGS.gcalAuto!==false){ setTimeout(()=>gcalSync(true), 3000); setInterval(()=>gcalSync(true), 3600000); }
     classeur.onScanFile(f=>{ if(!window._scanSink){ switchTab("docs"); openDoc(); } window._scanSink && window._scanSink(f); });
     classeur.onScanRequest(()=>{ switchTab("docs"); openDoc(); document.getElementById("f_scannow").click(); });
     document.querySelector(".app > section#view-set p.muted").textContent="Mon Classeur — application de bureau, sans compte ni serveur.";

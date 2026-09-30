@@ -49,6 +49,10 @@ Application Windows complète, sans navigateur. En plus de tout ce qui précède
   extrait (Tesseract ; les PDF « texte » sont lus directement). Résultat : la **recherche trouve un papier par son
   contenu** (un nom de médicament, un mot du compte rendu…), la fiche est **pré-remplie** (type, date, praticien,
   catégorie, titre) et le texte est consultable / copiable (bouton 📝 ou 🔍). Désactivable dans *Réglages*.
+- **🔄 Synchronisation Google Agenda** : collez une fois l'*adresse secrète au format iCal* de votre agenda
+  (*Réglages → Synchronisation Google Agenda*) ; l'app récupère vos rendez-vous au démarrage puis toutes les heures,
+  sans doublons. Lecture seule : rien n'est modifié dans Google. Pour obtenir l'adresse : calendar.google.com →
+  ⚙️ Paramètres → votre agenda dans la colonne de gauche → tout en bas, *Adresse secrète au format iCal* → copier.
 - Sauvegardes et exports `.ics` via une vraie boîte de dialogue « Enregistrer sous ».
 
 **Installer** : décompressez `Mon-Classeur-Windows-x64.zip` dans un dossier (ex. `C:\Mon Classeur`) et lancez

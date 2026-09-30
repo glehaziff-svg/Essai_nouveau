@@ -114,6 +114,25 @@ ipcMain.handle("app:saveFile", async (_e, { name, dataUrl, filters }) => {
   return r.filePath;
 });
 
+/* ---- Google Agenda : lecture de l'adresse iCal secrète (lecture seule, depuis le processus principal : pas de CORS) ---- */
+function validGcalUrl(u){ return /^https:\/\/calendar\.google\.com\/calendar\/ical\/.+\.ics$/.test(u||""); }
+ipcMain.handle("gcal:getUrl", async () => loadSettings().gcalUrl || "");
+ipcMain.handle("gcal:setUrl", async (_e, url) => {
+  url = String(url || "").trim();
+  if (url && !validGcalUrl(url)) return { ok: false, error: "Adresse invalide : elle doit commencer par https://calendar.google.com/calendar/ical/ et finir par .ics" };
+  const s = loadSettings(); s.gcalUrl = url; saveSettings(s); return { ok: true };
+});
+ipcMain.handle("gcal:fetch", async () => {
+  const url = loadSettings().gcalUrl; if (!validGcalUrl(url)) return { ok: false, error: "Aucune adresse Google Agenda enregistrée." };
+  try {
+    const r = await net.fetch(url, { headers: { "User-Agent": "MonClasseur/1.0" } });
+    if (!r.ok) return { ok: false, error: "Google a répondu " + r.status + (r.status === 404 ? " — l'adresse secrète a peut-être été réinitialisée." : "") };
+    const text = await r.text();
+    if (!/BEGIN:VCALENDAR/.test(text)) return { ok: false, error: "La réponse n'est pas un agenda iCal." };
+    return { ok: true, text };
+  } catch (e) { return { ok: false, error: "Connexion impossible (" + (e.message || e) + ")" }; }
+});
+
 /* ---- Fenêtre & zone de notification ---- */
 function showWindow(){ if (!win) return; if (win.isMinimized()) win.restore(); win.show(); win.focus(); }
 function createWindow(){
