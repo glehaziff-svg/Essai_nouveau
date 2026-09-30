@@ -29,6 +29,7 @@ function saveSettings(s){ try { fs.writeFileSync(settingsPath(), JSON.stringify(
 /* ---- Emplacements habituels d'IJ Scan Utility ---- */
 function findScanUtility(){
   if (!isWin) return null;
+  const s = loadSettings(); if (s.scanApp && fs.existsSync(s.scanApp)) return s.scanApp;
   const pf = process.env["ProgramFiles"] || "C:\\Program Files";
   const pf86 = process.env["ProgramFiles(x86)"] || "C:\\Program Files (x86)";
   const candidates = [
@@ -37,7 +38,19 @@ function findScanUtility(){
     path.join(pf86, "Canon", "IJ Scan Utility Lite", "SCANUTILITYLITE.EXE"),
     path.join(pf, "Canon", "IJ Scan Utility Lite", "SCANUTILITYLITE.EXE"),
   ];
-  return candidates.find(p => fs.existsSync(p)) || null;
+  const hit = candidates.find(p => fs.existsSync(p)); if (hit) return hit;
+  // Recherche large dans les dossiers Canon, puis les raccourcis du menu Démarrer
+  for (const base of [pf86, pf]) {
+    const canon = path.join(base, "Canon");
+    try { for (const d of fs.readdirSync(canon)) { if (!/scan/i.test(d)) continue; const dir = path.join(canon, d);
+      for (const f of fs.readdirSync(dir)) if (/scan.*\.exe$/i.test(f)) return path.join(dir, f); } } catch {}
+  }
+  for (const sm of [path.join(process.env.ProgramData || "C:\\ProgramData", "Microsoft", "Windows", "Start Menu", "Programs"), path.join(app.getPath("appData"), "Microsoft", "Windows", "Start Menu", "Programs")]) {
+    try { for (const d of fs.readdirSync(sm)) { if (!/canon/i.test(d)) continue; const dir = path.join(sm, d);
+      const walk = (p, depth) => { for (const f of fs.readdirSync(p)) { const full = path.join(p, f); if (fs.statSync(full).isDirectory()) { if (depth < 2) { const r = walk(full, depth + 1); if (r) return r; } } else if (/scan.*\.lnk$/i.test(f)) return full; } return null; };
+      const r = walk(dir, 0); if (r) return r; } } catch {}
+  }
+  return null;
 }
 
 /* ---- Dossier de scan par défaut (celui d'IJ Scan Utility : Documents) ---- */
@@ -87,10 +100,43 @@ ipcMain.handle("scan:start", async () => {
   const dir = defaultScanDir();
   watchScanDir(dir, Date.now());
   if (exe) {
-    try { spawn(exe, [], { detached: true, stdio: "ignore" }).unref(); } catch (e) { return { ok: false, dir, error: String(e) }; }
-    return { ok: true, dir, launched: true };
+    try { if (/\.lnk$/i.test(exe)) await shell.openPath(exe); else spawn(exe, [], { detached: true, stdio: "ignore" }).unref(); }
+    catch (e) { return { ok: false, dir, error: String(e) }; }
+    return { ok: true, dir, launched: true, exe };
   }
   return { ok: true, dir, launched: false };
+});
+ipcMain.handle("scan:chooseApp", async () => {
+  const r = await dialog.showOpenDialog(win, { title: "Programme de numérisation (ex. SCANUTILITY.EXE)", properties: ["openFile"], filters: [{ name: "Programme", extensions: ["exe", "lnk"] }] });
+  if (r.canceled || !r.filePaths[0]) return findScanUtility();
+  const s = loadSettings(); s.scanApp = r.filePaths[0]; saveSettings(s); return s.scanApp;
+});
+/* ---- Numérisation directe (WIA) : le scanner démarre, l'image est renvoyée à l'application ---- */
+let wiaProc = null;
+ipcMain.handle("scan:wia", async (_e, opts) => {
+  if (!isWin) return { ok: false, error: "La numérisation directe n'est disponible que sous Windows." };
+  if (wiaProc) return { ok: false, error: "Une numérisation est déjà en cours." };
+  const dir = path.join(app.getPath("userData"), "scans"); fs.mkdirSync(dir, { recursive: true });
+  const stamp = new Date().toISOString().replace(/[-:T]/g, "").slice(0, 14);
+  const out = path.join(dir, "scan-" + stamp + ".jpg");
+  const script = path.join(__dirname, "scan.ps1");
+  const args = ["-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", script, "-out", out, "-dpi", String((opts && opts.dpi) || 300), "-mode", (opts && opts.mode) || "color"];
+  return new Promise((resolve) => {
+    let output = "", err = "";
+    try { wiaProc = spawn("powershell.exe", args, { windowsHide: true }); }
+    catch (e) { wiaProc = null; return resolve({ ok: false, error: "PowerShell introuvable : " + e.message }); }
+    const timer = setTimeout(() => { try { wiaProc.kill(); } catch {} }, 240000);
+    wiaProc.stdout.on("data", d => output += d.toString());
+    wiaProc.stderr.on("data", d => err += d.toString());
+    wiaProc.on("close", () => {
+      clearTimeout(timer); wiaProc = null;
+      const m = /OK:(.+)$/m.exec(output);
+      if (m && fs.existsSync(m[1].trim())) { const file = m[1].trim(); const data = fs.readFileSync(file);
+        return resolve({ ok: true, name: path.basename(file), type: "image/jpeg", dataUrl: "data:image/jpeg;base64," + data.toString("base64") }); }
+      const e = /ERR:([A-Z_]+):(.*)$/m.exec(output);
+      resolve({ ok: false, code: e ? e[1] : "UNKNOWN", error: e ? e[2].trim() : ("Échec de la numérisation. " + (err || output).trim().slice(0, 300)) });
+    });
+  });
 });
 ipcMain.handle("scan:stop", async () => { stopWatch(); return true; });
 ipcMain.handle("scan:chooseDir", async () => {

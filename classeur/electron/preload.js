@@ -6,6 +6,8 @@ contextBridge.exposeInMainWorld("classeur", {
   scanStop: () => ipcRenderer.invoke("scan:stop"),
   scanChooseDir: () => ipcRenderer.invoke("scan:chooseDir"),
   scanGetDir: () => ipcRenderer.invoke("scan:getDir"),
+  scanChooseApp: () => ipcRenderer.invoke("scan:chooseApp"),
+  scanWia: (opts) => ipcRenderer.invoke("scan:wia", opts),
   scanHasUtility: () => ipcRenderer.invoke("scan:hasUtility"),
   onScanFile: (cb) => ipcRenderer.on("scan:file", (_e, f) => cb(f)),
   onScanRequest: (cb) => ipcRenderer.on("scan:request", () => cb()),

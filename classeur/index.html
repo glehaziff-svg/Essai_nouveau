@@ -159,7 +159,7 @@
   .attach{display:flex;align-items:center;gap:8px;background:var(--panel-2);border:1px solid var(--line);border-radius:9px;padding:8px 10px;margin-top:8px;font-size:13px}
   .attach .grow{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
-  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(120%);
+  .toast{position:fixed;left:50%;top:16px;transform:translateX(-50%) translateY(-160%);
     background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:12px;font-weight:600;font-size:14px;
     box-shadow:var(--shadow);z-index:80;transition:transform .25s ease;max-width:90vw}
   .toast.show{transform:translateX(-50%) translateY(0)}
@@ -320,6 +320,10 @@
       <div class="settings-row">
         <div><b>Rappels par notification</b><div class="muted small">Alerte à l'approche d'un rendez-vous (page ouverte).</div></div>
         <button class="btn small" id="setNotif">Vérifier</button>
+      </div>
+      <div class="settings-row hidden" id="rowScanApp">
+        <div><b>Programme de numérisation (secours)</b><div class="muted small">Le bouton <i>Numériser maintenant</i> pilote le scanner directement (Windows). En secours, <i>Ouvrir IJ Scan Utility</i> lance ce programme. Actuel : <code id="scanAppLabel">…</code></div></div>
+        <button class="btn small" id="btnScanApp">Choisir…</button>
       </div>
       <div class="settings-row hidden" id="rowScanDir">
         <div><b>Dossier des scans</b><div class="muted small">Le dossier où IJ Scan Utility enregistre les fichiers (Paramètres → Numérisation document → Enregistrer dans). Actuel : <code id="scanDirLabel">…</code></div></div>
@@ -741,9 +745,11 @@ function openDoc(id){
       <div class="field"><label>Numérisation / pièces jointes <span class="hint">(PDF, photos — restent sur l'appareil)</span></label>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button type="button" class="btn primary hidden" id="f_scannow" style="font-size:15px;padding:11px 16px">🖨️ Numériser maintenant</button>
+          <button type="button" class="btn small hidden" id="f_scanapp" title="Ouvrir le logiciel Canon ; le scan sera récupéré automatiquement">Ouvrir IJ Scan Utility</button>
           <button type="button" class="btn small" id="f_scanbtn">📎 Joindre un scan / fichier</button>
           <button type="button" class="btn small" id="f_cambtn">📷 Photographier</button>
         </div>
+        <div id="f_scanstatus" class="notice hidden" style="margin-top:8px;padding:10px 12px"></div>
         <div class="filebox" id="f_drop" style="margin-top:8px">Ou glissez-déposez ici vos fichiers numérisés (PDF ou JPG)</div>
         <input type="file" id="f_file" class="hidden" accept="image/*,application/pdf" multiple>
         <input type="file" id="f_cam" class="hidden" accept="image/*" capture="environment">
@@ -814,8 +820,26 @@ function openDoc(id){
   refreshAtt();
   window._scanSink = async (f)=>{ const blob=await (await fetch(f.dataUrl)).blob(); await handleFiles([new File([blob], f.name, {type:f.type})]); toast("Scan « "+f.name+" » joint ✓"); };
   if(window.classeur){
-    const sn=modal.querySelector("#f_scannow"); sn.classList.remove("hidden");
-    sn.onclick=async()=>{ const r=await classeur.scanStart(); toast(r.launched?"IJ Scan Utility lancé — numérisez, le fichier sera joint automatiquement.":"IJ Scan Utility introuvable : numérisez avec votre logiciel, le fichier sera récupéré dans "+r.dir); };
+    const sn=modal.querySelector("#f_scannow"), sa=modal.querySelector("#f_scanapp"), stBox=modal.querySelector("#f_scanstatus");
+    sn.classList.remove("hidden"); sa.classList.remove("hidden");
+    const status=(html, kind)=>{ stBox.className="notice"+(kind==="err"?" b-danger":""); stBox.innerHTML=html; stBox.classList.remove("hidden"); };
+    const hideStatus=()=>stBox.classList.add("hidden");
+    let scanning=false;
+    sn.onclick=async()=>{
+      if(scanning) return; scanning=true; sn.disabled=true; sn.textContent="⏳ Numérisation en cours…";
+      status("🖨️ <b>Le scanner démarre…</b> Laissez le document sur la vitre. Cela prend 10 à 30 secondes.");
+      try{
+        const r=await classeur.scanWia({dpi:300, mode:"color"});
+        if(r.ok){ hideStatus(); await window._scanSink({name:r.name,type:r.type,dataUrl:r.dataUrl}); status("✅ Page numérisée et jointe. Une autre page ? Cliquez de nouveau sur <b>Numériser maintenant</b>."); }
+        else { status("⚠️ <b>"+esc(r.error)+"</b><br><span class='small'>Vous pouvez réessayer, ou utiliser <b>Ouvrir IJ Scan Utility</b> : numérisez avec le logiciel Canon, le fichier sera récupéré automatiquement.</span>","err"); }
+      }catch(e){ status("⚠️ "+esc(String(e.message||e)),"err"); }
+      finally{ scanning=false; sn.disabled=false; sn.textContent="🖨️ Numériser maintenant"; }
+    };
+    sa.onclick=async()=>{
+      const r=await classeur.scanStart();
+      if(r.launched) status("🖨️ <b>IJ Scan Utility est ouvert.</b> Cliquez sur <b>Document</b> dedans : le fichier sera joint ici automatiquement (dossier surveillé : <code>"+esc(r.dir)+"</code>).");
+      else status("⚠️ <b>IJ Scan Utility est introuvable.</b><br><span class='small'>Indiquez son emplacement dans <b>Réglages → Programme de numérisation</b>, ou numérisez avec votre logiciel : tout fichier qui apparaît dans <code>"+esc(r.dir)+"</code> sera joint ici.</span>","err");
+    };
   }
   modal.querySelectorAll("#f_cat .opt").forEach(o=>o.onclick=()=>{cat=o.dataset.cat; modal.querySelectorAll("#f_cat .opt").forEach(x=>x.classList.toggle("sel",x===o));});
   const fileInput=modal.querySelector("#f_file"), camInput=modal.querySelector("#f_cam"), drop=modal.querySelector("#f_drop");
@@ -1185,6 +1209,9 @@ function renderAll(){ renderDash(); renderRdv(); renderDocs(); renderCal(); rend
   }
   if(window.classeur){
     document.getElementById("rowScanDir").classList.remove("hidden");
+    document.getElementById("rowScanApp").classList.remove("hidden");
+    classeur.scanHasUtility().then(async ok=>{ document.getElementById("scanAppLabel").textContent = ok ? "détecté" : "non trouvé"; });
+    document.getElementById("btnScanApp").onclick=()=>classeur.scanChooseApp().then(p=>{ document.getElementById("scanAppLabel").textContent=p||"non trouvé"; if(p) toast("Programme enregistré."); });
     classeur.scanGetDir().then(d=>{ document.getElementById("scanDirLabel").textContent=d; });
     document.getElementById("btnScanDir").onclick=()=>classeur.scanChooseDir().then(d=>{ document.getElementById("scanDirLabel").textContent=d; toast("Dossier des scans mis à jour."); });
     document.getElementById("rowGcal").classList.remove("hidden"); document.getElementById("btnGcalSync").classList.remove("hidden");
