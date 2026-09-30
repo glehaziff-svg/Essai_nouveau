@@ -45,6 +45,10 @@ Application Windows complète, sans navigateur. En plus de tout ce qui précède
   (réglable dans *Réglages → Dossier des scans* ; par défaut *Documents*, comme IJ Scan Utility).
 - L'application reste dans la **zone de notification** (près de l'horloge) quand on ferme la fenêtre :
   les **rappels de rendez-vous** s'affichent même fenêtre fermée. *Quitter* via le clic droit sur l'icône.
+- **🔍 Lecture du texte des scans (OCR)**, hors-ligne, en français : à l'ajout d'un scan ou d'une photo, le texte est
+  extrait (Tesseract ; les PDF « texte » sont lus directement). Résultat : la **recherche trouve un papier par son
+  contenu** (un nom de médicament, un mot du compte rendu…), la fiche est **pré-remplie** (type, date, praticien,
+  catégorie, titre) et le texte est consultable / copiable (bouton 📝 ou 🔍). Désactivable dans *Réglages*.
 - Sauvegardes et exports `.ics` via une vraie boîte de dialogue « Enregistrer sous ».
 
 **Installer** : décompressez `Mon-Classeur-Windows-x64.zip` dans un dossier (ex. `C:\Mon Classeur`) et lancez
@@ -52,7 +56,8 @@ Application Windows complète, sans navigateur. En plus de tout ce qui précède
 Windows SmartScreen peut avertir au premier lancement (application non signée) : *Informations complémentaires* →
 *Exécuter quand même*. Les données sont dans `%APPDATA%\mon-classeur`.
 
-**Reconstruire le .exe** : `npm install && npm run build:win` dans ce dossier (résultat dans `dist/`), ou via
+**Reconstruire le .exe** : `npm install && npm run build:win` dans ce dossier (résultat dans `dist/` ; le script
+`vendor` copie Tesseract/pdf.js et télécharge le modèle français `fra.traineddata` une fois), ou via
 l'action GitHub *Build Mon Classeur* (artefact téléchargeable dans l'onglet Actions).
 
 ## Lancer comme une application (fichiers exécutables, sans Electron)

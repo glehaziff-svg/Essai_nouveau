@@ -1,7 +1,21 @@
 // Processus principal : fenêtre, zone de notification, numérisation (IJ Scan Utility), rappels.
-const { app, BrowserWindow, Tray, Menu, ipcMain, dialog, shell, Notification, nativeImage } = require("electron");
+const { app, BrowserWindow, Tray, Menu, ipcMain, dialog, shell, Notification, nativeImage, protocol, net } = require("electron");
 const path = require("path");
 const fs = require("fs");
+const { pathToFileURL } = require("url");
+
+/* ---- Schéma app:// : sert le dossier de l'application avec une vraie origine (nécessaire aux workers OCR/PDF) ---- */
+const APP_ROOT = path.join(__dirname, "..");
+protocol.registerSchemesAsPrivileged([{ scheme: "app", privileges: { standard: true, secure: true, supportFetchAPI: true, corsEnabled: true, stream: true } }]);
+function registerAppProtocol(){
+  protocol.handle("app", (req) => {
+    const u = new URL(req.url);
+    let p = decodeURIComponent(u.pathname); if (p === "/" || p === "") p = "/index.html";
+    const full = path.normalize(path.join(APP_ROOT, p));
+    if (!full.startsWith(APP_ROOT)) return new Response("Forbidden", { status: 403 });
+    return net.fetch(pathToFileURL(full).toString());
+  });
+}
 const { spawn } = require("child_process");
 
 const isWin = process.platform === "win32";
@@ -108,7 +122,7 @@ function createWindow(){
     title: "Mon Classeur", autoHideMenuBar: true, backgroundColor: "#f4f6fb",
     webPreferences: { preload: path.join(__dirname, "preload.js"), contextIsolation: true, nodeIntegration: false, spellcheck: true },
   });
-  win.loadFile(path.join(__dirname, "..", "index.html"));
+  win.loadURL("app://classeur/index.html");
   win.webContents.setWindowOpenHandler(({ url }) => { if (/^https?:/.test(url)) { shell.openExternal(url); return { action: "deny" }; } return { action: "allow" }; });
   win.on("close", e => { if (!quitting) { e.preventDefault(); win.hide(); } });
   win.on("closed", () => { win = null; });
@@ -130,7 +144,7 @@ const gotLock = app.requestSingleInstanceLock();
 if (!gotLock) app.quit();
 else {
   app.on("second-instance", showWindow);
-  app.whenReady().then(() => { createWindow(); createTray(); });
+  app.whenReady().then(() => { registerAppProtocol(); createWindow(); createTray(); });
   app.on("before-quit", () => { quitting = true; stopWatch(); });
   app.on("window-all-closed", () => { /* reste en zone de notification pour les rappels */ });
   app.on("activate", () => { if (!win) createWindow(); else showWindow(); });

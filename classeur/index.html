@@ -324,6 +324,10 @@
         <div><b>Dossier des scans</b><div class="muted small">Le dossier où IJ Scan Utility enregistre les fichiers (Paramètres → Numérisation document → Enregistrer dans). Actuel : <code id="scanDirLabel">…</code></div></div>
         <button class="btn small" id="btnScanDir">Choisir…</button>
       </div>
+      <div class="settings-row hidden" id="rowOcr">
+        <div><b>Lire automatiquement le texte des scans (OCR)</b><div class="muted small">À l'ajout d'un scan ou d'une photo, le texte est extrait hors-ligne : recherche dans le contenu et pré-remplissage de la fiche.</div></div>
+        <label class="switch"><input type="checkbox" id="setOcr"><span class="slider"></span></label>
+      </div>
       <div class="settings-row">
         <div><b>Délai de rappel</b><div class="muted small">Combien de temps avant le rendez-vous.</div></div>
         <select id="setLead" style="width:auto;min-width:150px">
@@ -371,6 +375,8 @@
 <div id="modalRoot"></div>
 <div class="toast" id="toast"></div>
 
+<script src="vendor/tesseract/tesseract.min.js"></script>
+<script src="vendor/pdfjs/pdf.min.js"></script>
 <script>
 "use strict";
 
@@ -417,6 +423,56 @@ const idb = {
   all(){ return this.tx("readonly",s=>s.getAll()); },
   clear(){ return this.tx("readwrite",s=>s.clear()); },
 };
+/* ---------- Lecture du texte des scans (OCR Tesseract, hors-ligne) ---------- */
+const OCR = {
+  available: !!window.Tesseract, worker:null,
+  async init(){
+    if(this.worker) return this.worker;
+    this.worker = await Tesseract.createWorker("fra", 1, { workerPath:"vendor/tesseract/worker.min.js", corePath:"vendor/tesseract/core", langPath:"vendor/tesseract/lang", gzip:true, cacheMethod:"none", workerBlobURL:false });
+    return this.worker;
+  },
+  async image(src){ const w=await this.init(); const {data}=await w.recognize(src); return data.text||""; },
+  async pdfPages(dataUrl, max){
+    if(!window.pdfjsLib) throw new Error("pdf.js absent");
+    pdfjsLib.GlobalWorkerOptions.workerSrc="vendor/pdfjs/pdf.worker.min.js";
+    const bytes=Uint8Array.from(atob(dataUrl.split(",")[1]), c=>c.charCodeAt(0));
+    const pdf=await pdfjsLib.getDocument({data:bytes}).promise; const pages=[];
+    for(let i=1;i<=Math.min(pdf.numPages,max);i++){
+      const page=await pdf.getPage(i);
+      const tc=await page.getTextContent(); const layer=tc.items.map(it=>it.str).join(" ").trim();
+      if(layer.length>60){ pages.push({text:layer}); continue; }          // PDF « texte » : pas besoin d'OCR
+      const vp=page.getViewport({scale:2}); const c=document.createElement("canvas"); c.width=vp.width; c.height=vp.height;
+      await page.render({canvasContext:c.getContext("2d"),viewport:vp}).promise; pages.push({canvas:c});
+    }
+    return pages;
+  },
+  /* rec = {type, data(dataURL)} → texte complet ; onProgress("Page 2/5") */
+  async read(rec, onProgress){
+    if(rec.type==="application/pdf"){
+      const pages=await this.pdfPages(rec.data, 20); const out=[];
+      for(let i=0;i<pages.length;i++){ onProgress&&onProgress("Page "+(i+1)+"/"+pages.length); out.push(pages[i].text ?? await this.image(pages[i].canvas)); }
+      return out.join("\n\n");
+    }
+    onProgress&&onProgress("Lecture de l'image…"); return this.image(rec.data);
+  }
+};
+function cleanOcr(t){ return (t||"").replace(/[ \t]+/g," ").replace(/\n{3,}/g,"\n\n").trim().slice(0,30000); }
+/* Devine type / date / praticien / catégorie à partir du texte lu */
+function analyzeText(text){
+  const t=norm(text), r={};
+  const types=[["compte rendu","Compte rendu"],["compte-rendu","Compte rendu"],["ordonnance","Ordonnance"],["prescription","Ordonnance"],["resultat","Résultat d'analyse"],["laboratoire","Résultat d'analyse"],["analyse","Résultat d'analyse"],["radiograph","Radio / Imagerie"],["scanner","Radio / Imagerie"],["irm","Radio / Imagerie"],["echograph","Radio / Imagerie"],["facture","Facture"],["attestation","Attestation"],["contrat","Contrat"],["avis d'impot","Avis / Impôts"],["impot","Avis / Impôts"],["carte","Pièce d'identité / Carte"]];
+  for(const [k,v] of types) if(t.includes(k)){ r.type=v; break; }
+  const dm=text.match(/\b(\d{1,2})[\/.-](\d{1,2})[\/.-](20\d{2}|19\d{2})\b/) || null;
+  if(dm){ r.date=dm[3]+"-"+pad(dm[2])+"-"+pad(dm[1]); }
+  else { const M={janvier:1,fevrier:2,mars:3,avril:4,mai:5,juin:6,juillet:7,aout:8,septembre:9,octobre:10,novembre:11,decembre:12};
+    const m2=t.match(/\b(\d{1,2})(?:er)?\s+(janvier|fevrier|mars|avril|mai|juin|juillet|aout|septembre|octobre|novembre|decembre)\s+(20\d{2}|19\d{2})\b/); if(m2) r.date=m2[3]+"-"+pad(M[m2[2]])+"-"+pad(m2[1]); }
+  const om=text.match(/\b(?:Docteur|Dr\.?|Pr\.?|Professeur)\s+([A-ZÉÈ][A-Za-zÀ-ÿ'-]+(?:\s+[A-ZÉÈ][A-Za-zÀ-ÿ'-]+)?)/);
+  if(om) r.org=om[0].replace(/\s+/g," ");
+  else { const orgs=["CPAM","Assurance Maladie","CAF","URSSAF","Pôle emploi","France Travail","Mutuelle","CHBA","Centre Hospitalier","Clinique","Laboratoire","Impots","Impôts","Mairie","Préfecture","Banque","EDF","Engie"]; const f=orgs.find(o=>t.includes(norm(o))); if(f) r.org=f; }
+  r.cat=guessCat(text);
+  return r;
+}
+
 function readAsDataURL(f){ return new Promise(res=>{ const rd=new FileReader(); rd.onload=()=>res(rd.result); rd.readAsDataURL(f); }); }
 /* Réduit les photos/scans image (max 2000 px, JPEG) pour économiser l'espace */
 function compressImage(file){ return new Promise(res=>{
@@ -537,7 +593,8 @@ function docRow(d){
   const meta=[d.type||null, d.org||null, d.ref?("N° "+d.ref):null, d.date?("du "+fmtDateShort(d.date)):null].filter(Boolean).join(" · ");
   const tags=(d.tags||[]).map(t=>`<span class="badge" style="background:var(--line);color:var(--muted)">#${esc(t)}</span>`).join(" ");
   const files=d.files||[];
-  const att=files.slice(0,3).map(f=>`<button class="btn icon small" title="Ouvrir ${esc(f.name)}" onclick="openFile('${f.id}')">${f.type.startsWith("image/")?"🖼️":"📄"}</button>`).join("");
+  const att=files.slice(0,3).map(f=>`<button class="btn icon small" title="Ouvrir ${esc(f.name)}" onclick="openFile('${f.id}')">${f.type.startsWith("image/")?"🖼️":"📄"}</button>`).join("")
+    + (files.some(f=>f.text)?`<button class="btn icon small" title="Voir le texte lu dans le scan" onclick="showText('${d.id}')">🔍</button>`:"");
   return `<div class="row">
     <div class="body">
       <div class="title">${esc(d.title||"Document")} ${catChip(d.cat)} ${badge}</div>
@@ -553,7 +610,7 @@ function docRow(d){
 }
 /* Texte normalisé (sans accents) pour une recherche tolérante */
 function norm(s){ return (s==null?"":String(s)).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,""); }
-function docHaystack(d){ return norm([d.title,d.type,d.org,d.ref,d.notes,(d.files||[]).map(f=>f.name).join(" "),CATS[d.cat]?.label,(d.tags||[]).join(" "),d.date,d.expiry].join(" ")); }
+function docHaystack(d){ return norm([d.title,d.type,d.org,d.ref,d.notes,(d.files||[]).map(f=>f.name+" "+(f.text||"")).join(" "),CATS[d.cat]?.label,(d.tags||[]).join(" "),d.date,d.expiry].join(" ")); }
 function rdvHaystack(r){ return norm([r.title,r.person,r.place,r.notes,CATS[r.cat]?.label,r.date].join(" ")); }
 function matches(hay,q){ return norm(q).split(/\s+/).filter(Boolean).every(w=>hay.includes(w)); }
 function docsSorted(list, mode){
@@ -702,16 +759,43 @@ function openDoc(id){
   </div></div>`);
   let cat=d.cat, files=[...(d.files||[])], newRecords=[], removedIds=[];
   const attBox=modal.querySelector("#f_attach");
+  const ocrState={}; // id → "…" en cours
   function refreshAtt(){
-    attBox.innerHTML = files.map(f=>`<div class="attach"><span>${f.type.startsWith("image/")?"🖼️":"📄"}</span><span class="grow">${esc(f.name)}</span><button class="btn icon small danger" data-rmfile="${f.id}" title="Retirer">✕</button></div>`).join("");
+    attBox.innerHTML = files.map(f=>`<div class="attach"><span>${f.type.startsWith("image/")?"🖼️":"📄"}</span><span class="grow">${esc(f.name)}${f.text?` <span class="badge b-ok">🔍 texte lu</span>`:""}${ocrState[f.id]?` <span class="badge b-soon">${esc(ocrState[f.id])}</span>`:""}</span>
+      ${OCR.available && !ocrState[f.id] ? `<button type="button" class="btn icon small" data-ocr="${f.id}" title="${f.text?"Relire le texte":"Lire le texte (OCR)"}">🔍</button>`:""}
+      ${f.text?`<button type="button" class="btn icon small" data-viewtext="${f.id}" title="Voir le texte">📝</button>`:""}
+      <button type="button" class="btn icon small danger" data-rmfile="${f.id}" title="Retirer">✕</button></div>`).join("");
     attBox.querySelectorAll("[data-rmfile]").forEach(b=>b.onclick=()=>{ const id=b.dataset.rmfile; files=files.filter(f=>f.id!==id);
       if(newRecords.some(r=>r.id===id)) newRecords=newRecords.filter(r=>r.id!==id); else removedIds.push(id); refreshAtt(); });
+    attBox.querySelectorAll("[data-ocr]").forEach(b=>b.onclick=()=>ocrFile(b.dataset.ocr));
+    attBox.querySelectorAll("[data-viewtext]").forEach(b=>b.onclick=()=>{ const f=files.find(x=>x.id===b.dataset.viewtext); if(f) textViewer(f.name, f.text); });
+  }
+  async function ocrFile(id){
+    const entry=files.find(f=>f.id===id); if(!entry||ocrState[id]) return;
+    let rec=newRecords.find(r=>r.id===id) || await idb.get(id).catch(()=>null); if(!rec){ toast("Fichier introuvable."); return; }
+    ocrState[id]="lecture…"; refreshAtt();
+    try{
+      const text=cleanOcr(await OCR.read(rec, msg=>{ ocrState[id]=msg; refreshAtt(); }));
+      entry.text=text; delete ocrState[id]; refreshAtt();
+      if(!text){ toast("Aucun texte lisible dans « "+entry.name+" »."); return; }
+      prefill(analyzeText(text)); toast("Texte lu ✓ ("+text.length+" caractères)");
+    }catch(e){ delete ocrState[id]; refreshAtt(); toast("Lecture impossible : "+(e.message||e)); }
+  }
+  /* Remplit uniquement les champs encore vides */
+  function prefill(a){
+    const q=id=>modal.querySelector(id);
+    if(a.type && !q("#f_type").value) q("#f_type").value=a.type;
+    if(a.date && q("#f_date").value===new Date().toISOString().slice(0,10)) q("#f_date").value=a.date;
+    if(a.org && !q("#f_org").value) q("#f_org").value=a.org;
+    if(!d.id && a.cat && a.cat!=="autre"){ cat=a.cat; modal.querySelectorAll("#f_cat .opt").forEach(x=>x.classList.toggle("sel",x.dataset.cat===cat)); }
+    if(!q("#f_title").value.trim()){ const t=[q("#f_type").value||"Document", q("#f_org").value].filter(Boolean).join(" — "); q("#f_title").value=t; }
   }
   async function handleFiles(list){
     for(const f of Array.from(list||[])){
       if(f.size>25*1024*1024){ toast("« "+f.name+" » est trop lourd (max 25 Mo)."); continue; }
       toast("Ajout de « "+f.name+" »…");
       const rec=await fileToRecord(f); newRecords.push(rec); files.push({id:rec.id,name:rec.name,type:rec.type}); refreshAtt();
+      if(OCR.available && SETTINGS.autoOcr!==false) ocrFile(rec.id);
     }
   }
   refreshAtt();
@@ -761,11 +845,27 @@ async function openFile(fileId){
   }
 }
 
+/* ---------- Texte lu (OCR) ---------- */
+function textViewer(title, text){
+  const m=el(`<div class="overlay"><div class="modal">
+    <div class="modal-head"><h3>🔍 ${esc(title)}</h3><div class="grow"></div><button class="btn small" data-copy>Copier</button><button class="btn icon" data-close>✕</button></div>
+    <div class="modal-body"><pre style="white-space:pre-wrap;font:13px/1.5 inherit;margin:0;color:var(--ink)">${esc(text||"(aucun texte)")}</pre></div>
+  </div></div>`);
+  m.querySelector("[data-copy]").onclick=()=>{ navigator.clipboard.writeText(text||"").then(()=>toast("Texte copié.")); };
+  mountModal(m, true);
+}
+function showText(docId){
+  const d=DOCS.find(x=>x.id===docId); if(!d) return;
+  const parts=(d.files||[]).filter(f=>f.text).map(f=>"— "+f.name+" —\n"+f.text);
+  textViewer(d.title, parts.join("\n\n"));
+}
+
 /* ---------- Modale plumbing ---------- */
-function mountModal(node){
-  const root=document.getElementById("modalRoot"); root.innerHTML=""; root.appendChild(node);
-  node.addEventListener("click",e=>{ if(e.target===node) closeModal(); });
-  node.querySelectorAll("[data-close]").forEach(b=>b.onclick=closeModal);
+function mountModal(node, stacked){
+  const root=document.getElementById("modalRoot"); if(!stacked) root.innerHTML=""; root.appendChild(node);
+  const close = stacked ? ()=>node.remove() : closeModal;
+  node.addEventListener("click",e=>{ if(e.target===node) close(); });
+  node.querySelectorAll("[data-close]").forEach(b=>b.onclick=close);
   document.addEventListener("keydown",escClose);
   setTimeout(()=>{ const f=node.querySelector("input,textarea"); if(f) f.focus(); },50);
 }
@@ -1047,6 +1147,10 @@ function renderAll(){ renderDash(); renderRdv(); renderDocs(); renderCal(); rend
   lead.onchange=()=>{ SETTINGS.lead=parseInt(lead.value,10); save(LS.set,SETTINGS); toast("Délai de rappel mis à jour."); };
   document.getElementById("setDark").onchange=function(){ SETTINGS.dark=this.checked; save(LS.set,SETTINGS); applyTheme(); };
 
+  if(OCR.available){
+    const row=document.getElementById("rowOcr"), chk=document.getElementById("setOcr"); row.classList.remove("hidden");
+    chk.checked = SETTINGS.autoOcr!==false; chk.onchange=()=>{ SETTINGS.autoOcr=chk.checked; save(LS.set,SETTINGS); };
+  }
   if(window.classeur){
     document.getElementById("rowScanDir").classList.remove("hidden");
     classeur.scanGetDir().then(d=>{ document.getElementById("scanDirLabel").textContent=d; });
