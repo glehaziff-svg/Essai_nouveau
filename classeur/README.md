@@ -15,7 +15,7 @@ pour l'avoir aussi sur votre téléphone. Ajoutez la page à l'écran d'accueil 
 - **Calendrier** mensuel : cliquez sur un jour pour y ajouter un rendez-vous.
 - **Papiers** : nom, catégorie, **type** (compte rendu, ordonnance, résultat d'analyse, facture, attestation…),
   **praticien / organisme**, **mots-clés**, référence, date, **échéance** (alerte 45 jours avant expiration),
-  notes et **pièce jointe** (photo ou PDF ≤ 4 Mo, conservée sur l'appareil).
+  notes et **pièces jointes** (scans PDF, photos — plusieurs par papier, conservées sur l'appareil).
 - **Retrouver un document** : la recherche ignore les accents et accepte plusieurs mots
   (`martin compte` trouve « Compte rendu — Dr Martin »). Filtres par catégorie et par type, tri par date / échéance / nom.
 - **Rappels** : notification du navigateur avant chaque rendez-vous (délai réglable : 1 h à 2 jours), page ouverte.
@@ -43,3 +43,17 @@ pour l'avoir aussi sur votre téléphone. Ajoutez la page à l'écran d'accueil 
 L'application s'ouvre dans sa propre fenêtre, sans barre d'adresse, avec ses données isolées
 (Chrome, Edge ou Brave nécessaire ; sinon le navigateur par défaut est utilisé).
 Astuce Windows : clic droit sur le `.bat` → *Envoyer vers* → *Bureau (créer un raccourci)*.
+
+## Numériser vos papiers (scanner Canon + IJ Scan Utility)
+
+1. Lancez **`Numeriser.bat`** (ou IJ Scan Utility depuis le menu Démarrer).
+2. Une fois pour toutes, dans IJ Scan Utility → *Paramètres* → *Numérisation document* :
+   format **PDF** (multi-pages possible) ou JPEG, et un dossier de sortie facile à retrouver,
+   par ex. `Documents\Mon Classeur\Scans`.
+3. Cliquez **Document** (ou **Auto**) : le fichier apparaît dans ce dossier.
+4. Dans Mon Classeur → *Papiers* → **+ Nouveau papier** → **🖨️ Joindre un scan / fichier**
+   (ou glissez le fichier dans la zone) → Enregistrer.
+
+Sur téléphone, le bouton **📷 Photographier** ouvre directement l'appareil photo.
+Les scans sont stockés dans le navigateur (IndexedDB, plusieurs centaines de Mo possibles) et inclus
+dans le fichier de **Sauvegarde**.
