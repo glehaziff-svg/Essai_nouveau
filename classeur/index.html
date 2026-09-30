@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mon Classeur — Rendez-vous & Papiers</title>
+<style>
+  :root{
+    --bg:#f4f6fb; --panel:#ffffff; --panel-2:#f8fafc; --ink:#1c2432; --muted:#66707f;
+    --line:#e3e8f0; --brand:#2f6fed; --brand-ink:#1b4fc0; --accent:#f0f5ff;
+    --med:#e11d64; --admin:#2f6fed; --fin:#0f9d6a; --autre:#8b5cf6;
+    --danger:#d64545; --warn:#c47f17; --ok:#0f9d6a;
+    --shadow:0 1px 2px rgba(20,30,60,.06),0 8px 24px rgba(20,30,60,.06);
+    --radius:14px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0f1521; --panel:#171f2e; --panel-2:#1d2636; --ink:#e8edf6; --muted:#93a0b4;
+      --line:#28324a; --brand:#4d86ff; --brand-ink:#82abff; --accent:#1a2740;
+      --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0f1521; --panel:#171f2e; --panel-2:#1d2636; --ink:#e8edf6; --muted:#93a0b4;
+    --line:#28324a; --brand:#4d86ff; --brand-ink:#82abff; --accent:#1a2740;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg); color:var(--ink); line-height:1.5; -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--brand-ink)}
+  .app{max-width:1120px;margin:0 auto;padding:0 16px 96px}
+
+  header.top{
+    position:sticky;top:0;z-index:30;background:var(--bg);
+    padding:14px 0 10px;border-bottom:1px solid var(--line);margin-bottom:18px;
+  }
+  .top-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px;letter-spacing:-.02em}
+  .logo .mark{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--brand),#7aa2ff);
+    display:grid;place-items:center;color:#fff;font-size:18px;flex:none}
+  .grow{flex:1}
+  .btn{
+    display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);
+    background:var(--panel);color:var(--ink);padding:9px 13px;border-radius:10px;
+    font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;white-space:nowrap;
+  }
+  .btn:hover{border-color:var(--brand);color:var(--brand-ink)}
+  .btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+  .btn.primary:hover{background:var(--brand-ink);color:#fff}
+  .btn.danger{color:var(--danger);border-color:transparent;background:transparent}
+  .btn.danger:hover{background:rgba(214,69,69,.1);border-color:transparent}
+  .btn.small{padding:6px 10px;font-size:13px}
+  .btn.icon{padding:8px;border-radius:9px}
+
+  nav.tabs{display:flex;gap:4px;overflow-x:auto;margin-top:12px;scrollbar-width:none}
+  nav.tabs::-webkit-scrollbar{display:none}
+  .tab{
+    border:none;background:transparent;color:var(--muted);font-weight:600;font-size:14px;
+    padding:9px 14px;border-radius:9px;cursor:pointer;white-space:nowrap;display:flex;gap:7px;align-items:center;
+  }
+  .tab .cnt{background:var(--line);color:var(--muted);border-radius:20px;padding:0 7px;font-size:12px;font-weight:700}
+  .tab.active{background:var(--panel);color:var(--ink);box-shadow:var(--shadow)}
+  .tab.active .cnt{background:var(--brand);color:#fff}
+
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+  .section-title{font-size:15px;font-weight:800;margin:0 0 2px;letter-spacing:-.01em}
+  .muted{color:var(--muted)}
+  .small{font-size:13px}
+
+  /* dashboard */
+  .grid{display:grid;gap:16px}
+  .stats{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+  .stat{padding:16px;display:flex;flex-direction:column;gap:2px}
+  .stat .n{font-size:28px;font-weight:800;letter-spacing:-.03em}
+  .stat .l{font-size:13px;color:var(--muted);font-weight:600}
+  .stat .mark{font-size:20px}
+
+  .list{display:flex;flex-direction:column}
+  .row{
+    display:flex;gap:12px;align-items:center;padding:14px 16px;border-top:1px solid var(--line);
+  }
+  .row:first-child{border-top:none}
+  .row .body{flex:1;min-width:0}
+  .row .title{font-weight:700;font-size:14.5px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .row .sub{color:var(--muted);font-size:13px;margin-top:2px;overflow:hidden;text-overflow:ellipsis}
+  .row .actions{display:flex;gap:4px;flex:none}
+
+  .chip{font-size:12px;font-weight:700;padding:2px 9px;border-radius:20px;display:inline-flex;gap:5px;align-items:center;white-space:nowrap}
+  .chip .dot{width:8px;height:8px;border-radius:50%}
+  .c-med{background:rgba(225,29,100,.12);color:var(--med)} .c-med .dot{background:var(--med)}
+  .c-admin{background:rgba(47,111,237,.12);color:var(--admin)} .c-admin .dot{background:var(--admin)}
+  .c-fin{background:rgba(15,157,106,.14);color:var(--fin)} .c-fin .dot{background:var(--fin)}
+  .c-autre{background:rgba(139,92,246,.14);color:var(--autre)} .c-autre .dot{background:var(--autre)}
+  .badge{font-size:11.5px;font-weight:700;padding:2px 8px;border-radius:6px}
+  .b-warn{background:rgba(196,127,23,.15);color:var(--warn)}
+  .b-danger{background:rgba(214,69,69,.15);color:var(--danger)}
+  .b-ok{background:rgba(15,157,106,.15);color:var(--ok)}
+  .b-soon{background:var(--accent);color:var(--brand-ink)}
+
+  .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+  input[type=text],input[type=date],input[type=time],input[type=search],select,textarea{
+    width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel-2);
+    color:var(--ink);font-size:14px;font-family:inherit;
+  }
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--brand);outline-offset:-1px;border-color:var(--brand)}
+  .search{flex:1;min-width:180px;position:relative}
+  .search input{padding-left:36px}
+  .search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);opacity:.5}
+  .filters{display:flex;gap:6px;flex-wrap:wrap}
+  .filter{border:1px solid var(--line);background:var(--panel);color:var(--muted);border-radius:20px;
+    padding:6px 12px;font-size:13px;font-weight:600;cursor:pointer}
+  .filter.active{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
+  .empty{padding:52px 20px;text-align:center;color:var(--muted)}
+  .empty .big{font-size:40px;margin-bottom:8px}
+
+  /* calendar */
+  .cal-head{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+  .cal-dow{text-align:center;font-size:12px;font-weight:700;color:var(--muted);padding:4px 0}
+  .cal-cell{min-height:78px;background:var(--panel-2);border:1px solid var(--line);border-radius:9px;padding:6px;
+    display:flex;flex-direction:column;gap:3px;cursor:pointer;overflow:hidden}
+  .cal-cell.other{opacity:.4}
+  .cal-cell.today{border-color:var(--brand);box-shadow:inset 0 0 0 1px var(--brand)}
+  .cal-cell .dnum{font-size:12.5px;font-weight:700;align-self:flex-end}
+  .cal-ev{font-size:11px;font-weight:600;padding:2px 5px;border-radius:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cal-ev.e-med{background:rgba(225,29,100,.16);color:var(--med)}
+  .cal-ev.e-admin{background:rgba(47,111,237,.16);color:var(--admin)}
+  .cal-ev.e-fin{background:rgba(15,157,106,.18);color:var(--fin)}
+  .cal-ev.e-autre{background:rgba(139,92,246,.18);color:var(--autre)}
+  .cal-more{font-size:10.5px;color:var(--muted);font-weight:700}
+
+  /* modal */
+  .overlay{position:fixed;inset:0;background:rgba(15,20,35,.55);backdrop-filter:blur(2px);z-index:60;
+    display:flex;align-items:flex-end;justify-content:center;padding:0}
+  @media(min-width:640px){.overlay{align-items:center;padding:20px}}
+  .modal{background:var(--panel);width:100%;max-width:560px;max-height:92vh;overflow:auto;
+    border-radius:18px 18px 0 0;box-shadow:var(--shadow)}
+  @media(min-width:640px){.modal{border-radius:18px}}
+  .modal-head{display:flex;align-items:center;gap:10px;padding:18px 20px 4px}
+  .modal-head h3{margin:0;font-size:17px;font-weight:800}
+  .modal-body{padding:8px 20px 20px}
+  .field{margin-top:14px}
+  .field label{display:block;font-size:13px;font-weight:700;margin-bottom:6px}
+  .field .hint{font-weight:500;color:var(--muted);font-size:12px}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .catpick{display:flex;gap:8px;flex-wrap:wrap}
+  .catpick .opt{border:1px solid var(--line);border-radius:10px;padding:8px 12px;cursor:pointer;font-weight:700;font-size:13px;display:flex;gap:6px;align-items:center}
+  .catpick .opt.sel{border-color:var(--brand);background:var(--accent)}
+  .modal-foot{display:flex;gap:10px;padding:8px 20px 22px;position:sticky;bottom:0;background:var(--panel)}
+  .modal-foot .grow{flex:1}
+
+  .filebox{border:1.5px dashed var(--line);border-radius:10px;padding:14px;text-align:center;color:var(--muted);cursor:pointer;font-size:13px}
+  .filebox:hover{border-color:var(--brand);color:var(--brand-ink)}
+  .attach{display:flex;align-items:center;gap:8px;background:var(--panel-2);border:1px solid var(--line);border-radius:9px;padding:8px 10px;margin-top:8px;font-size:13px}
+  .attach .grow{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(120%);
+    background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:12px;font-weight:600;font-size:14px;
+    box-shadow:var(--shadow);z-index:80;transition:transform .25s ease;max-width:90vw}
+  .toast.show{transform:translateX(-50%) translateY(0)}
+
+  .notice{background:var(--accent);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:13.5px;display:flex;gap:12px}
+  .notice .ic{font-size:20px;flex:none}
+  .fab{position:fixed;right:18px;bottom:18px;z-index:40}
+  .settings-row{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:14px 16px;border-top:1px solid var(--line)}
+  .settings-row:first-child{border-top:none}
+  .switch{position:relative;width:46px;height:26px;flex:none}
+  .switch input{opacity:0;width:0;height:0}
+  .slider{position:absolute;inset:0;background:var(--line);border-radius:20px;transition:.2s;cursor:pointer}
+  .slider:before{content:"";position:absolute;width:20px;height:20px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
+  .switch input:checked+.slider{background:var(--brand)}
+  .switch input:checked+.slider:before{transform:translateX(20px)}
+  .hidden{display:none!important}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="top-row">
+      <div class="logo"><span class="mark">🗂️</span><span>Mon Classeur</span></div>
+      <div class="grow"></div>
+      <button class="btn small" id="btnExport" title="Sauvegarder toutes mes données dans un fichier">⬇︎ Sauvegarde</button>
+      <button class="btn small" id="btnImport" title="Restaurer depuis un fichier de sauvegarde">⬆︎ Restaurer</button>
+      <button class="btn icon" id="btnTheme" title="Thème clair / sombre">◐</button>
+    </div>
+    <nav class="tabs" id="tabs">
+      <button class="tab active" data-tab="dash">🏠 Tableau de bord</button>
+      <button class="tab" data-tab="rdv">📅 Rendez-vous <span class="cnt" id="cntRdv">0</span></button>
+      <button class="tab" data-tab="cal">🗓️ Calendrier</button>
+      <button class="tab" data-tab="docs">📄 Papiers <span class="cnt" id="cntDocs">0</span></button>
+      <button class="tab" data-tab="set">⚙️ Réglages</button>
+    </nav>
+  </header>
+
+  <!-- DASHBOARD -->
+  <section id="view-dash">
+    <div class="panel" style="padding:14px 16px;margin-bottom:16px">
+      <label class="search" style="display:block">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
+        <input type="search" id="globalSearch" placeholder="Retrouver un compte rendu, une ordonnance, un rendez-vous, un praticien…" style="font-size:15px;padding:12px 12px 12px 38px">
+      </label>
+      <div id="globalResults" class="list hidden" style="margin-top:12px;border-top:1px solid var(--line)"></div>
+    </div>
+    <div class="grid stats" style="margin-bottom:16px">
+      <div class="panel stat"><span class="mark">📅</span><span class="n" id="sRdv">0</span><span class="l">Rendez-vous à venir</span></div>
+      <div class="panel stat"><span class="mark">⏰</span><span class="n" id="sSoon">0</span><span class="l">Dans les 7 jours</span></div>
+      <div class="panel stat"><span class="mark">📄</span><span class="n" id="sDocs">0</span><span class="l">Papiers classés</span></div>
+      <div class="panel stat"><span class="mark">⚠️</span><span class="n" id="sExp">0</span><span class="l">Échéances proches</span></div>
+    </div>
+
+    <div id="notifNotice" class="notice hidden" style="margin-bottom:16px">
+      <span class="ic">🔔</span>
+      <div class="grow">
+        <b>Activez les rappels</b><br>
+        <span class="muted small">Autorisez les notifications pour être prévenu(e) de vos rendez-vous quand cette page est ouverte.</span>
+      </div>
+      <button class="btn small primary" id="btnEnableNotif" style="align-self:center">Activer</button>
+    </div>
+
+    <div class="grid" style="grid-template-columns:1fr;gap:16px">
+      <div class="panel">
+        <div style="display:flex;align-items:center;padding:16px 16px 10px">
+          <div><div class="section-title">Prochains rendez-vous</div><div class="muted small">Les 5 plus proches</div></div>
+          <div class="grow"></div>
+          <button class="btn small primary" onclick="openRdv()">+ Ajouter</button>
+        </div>
+        <div class="list" id="dashRdv"></div>
+      </div>
+      <div class="panel">
+        <div style="display:flex;align-items:center;padding:16px 16px 10px">
+          <div><div class="section-title">Échéances de papiers</div><div class="muted small">Documents à renouveler bientôt</div></div>
+          <div class="grow"></div>
+          <button class="btn small" onclick="switchTab('docs')">Voir tout</button>
+        </div>
+        <div class="list" id="dashDocs"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RENDEZ-VOUS -->
+  <section id="view-rdv" class="hidden">
+    <div class="toolbar">
+      <label class="search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
+        <input type="search" id="rdvSearch" placeholder="Rechercher un rendez-vous…">
+      </label>
+      <button class="btn primary" onclick="openRdv()">+ Nouveau rendez-vous</button>
+    </div>
+    <div class="filters" id="rdvFilters" style="margin-bottom:14px">
+      <button class="filter active" data-cat="all">Tous</button>
+      <button class="filter" data-cat="med">Médical</button>
+      <button class="filter" data-cat="admin">Administratif</button>
+      <button class="filter" data-cat="fin">Finances</button>
+      <button class="filter" data-cat="autre">Autre</button>
+    </div>
+    <div class="panel"><div class="list" id="rdvList"></div></div>
+  </section>
+
+  <!-- CALENDRIER -->
+  <section id="view-cal" class="hidden">
+    <div class="panel" style="padding:16px">
+      <div class="cal-head">
+        <button class="btn icon" id="calPrev">‹</button>
+        <div class="section-title" id="calLabel" style="min-width:150px;text-align:center;font-size:16px"></div>
+        <button class="btn icon" id="calNext">›</button>
+        <div class="grow"></div>
+        <button class="btn small" id="calToday">Aujourd'hui</button>
+        <button class="btn small primary" onclick="openRdv()">+ RDV</button>
+      </div>
+      <div class="cal-grid" id="calDow"></div>
+      <div class="cal-grid" id="calBody" style="margin-top:6px"></div>
+    </div>
+  </section>
+
+  <!-- DOCUMENTS -->
+  <section id="view-docs" class="hidden">
+    <div class="toolbar">
+      <label class="search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
+        <input type="search" id="docSearch" placeholder="Rechercher un papier (compte rendu, Dr Martin, mutuelle, impôts…)">
+      </label>
+      <button class="btn primary" onclick="openDoc()">+ Nouveau papier</button>
+    </div>
+    <div class="toolbar" style="gap:8px">
+      <div class="filters" id="docFilters">
+        <button class="filter active" data-cat="all">Tous</button>
+        <button class="filter" data-cat="med">Médical</button>
+        <button class="filter" data-cat="admin">Administratif</button>
+        <button class="filter" data-cat="fin">Finances</button>
+        <button class="filter" data-cat="autre">Autre</button>
+      </div>
+      <div class="grow"></div>
+      <select id="docType" style="width:auto;padding:7px 10px;font-size:13px"><option value="all">Tous les types</option></select>
+      <select id="docSort" style="width:auto;padding:7px 10px;font-size:13px">
+        <option value="recent">Plus récents</option>
+        <option value="expiry">Par échéance</option>
+        <option value="name">Nom A → Z</option>
+      </select>
+    </div>
+    <div class="panel"><div class="list" id="docList"></div></div>
+  </section>
+
+  <!-- REGLAGES -->
+  <section id="view-set" class="hidden">
+    <div class="notice" style="margin-bottom:16px">
+      <span class="ic">🔒</span>
+      <div>
+        <b>Vos données restent sur cet appareil.</b><br>
+        <span class="muted small">Rien n'est envoyé sur Internet. Tout est stocké dans ce navigateur. Pensez à faire une <b>Sauvegarde</b> régulière et à la garder en lieu sûr — surtout pour vos documents médicaux.</span>
+      </div>
+    </div>
+    <div class="panel" style="margin-bottom:16px">
+      <div class="settings-row">
+        <div><b>Rappels par notification</b><div class="muted small">Alerte à l'approche d'un rendez-vous (page ouverte).</div></div>
+        <button class="btn small" id="setNotif">Vérifier</button>
+      </div>
+      <div class="settings-row">
+        <div><b>Délai de rappel</b><div class="muted small">Combien de temps avant le rendez-vous.</div></div>
+        <select id="setLead" style="width:auto;min-width:150px">
+          <option value="60">1 heure avant</option>
+          <option value="180">3 heures avant</option>
+          <option value="1440">1 jour avant</option>
+          <option value="2880">2 jours avant</option>
+        </select>
+      </div>
+      <div class="settings-row">
+        <div><b>Thème sombre</b><div class="muted small">Basculer l'apparence.</div></div>
+        <label class="switch"><input type="checkbox" id="setDark"><span class="slider"></span></label>
+      </div>
+    </div>
+    <div class="panel" style="margin-bottom:16px">
+      <div class="settings-row">
+        <div><b>Sauvegarder mes données</b><div class="muted small">Télécharge un fichier avec tous vos rendez-vous et papiers.</div></div>
+        <button class="btn small primary" onclick="exportData()">⬇︎ Sauvegarder</button>
+      </div>
+      <div class="settings-row">
+        <div><b>Restaurer une sauvegarde</b><div class="muted small">Remplace les données actuelles par un fichier de sauvegarde.</div></div>
+        <button class="btn small" onclick="document.getElementById('importFile').click()">⬆︎ Restaurer</button>
+      </div>
+      <div class="settings-row">
+        <div><b>Exporter vers Google Agenda / .ics</b><div class="muted small">Fichier .ics importable dans Google Agenda, Apple Calendrier, Outlook…</div></div>
+        <button class="btn small" onclick="exportICSAll()">🗓️ Exporter .ics</button>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="settings-row">
+        <div><b style="color:var(--danger)">Tout effacer</b><div class="muted small">Supprime définitivement toutes les données de cet appareil.</div></div>
+        <button class="btn small danger" onclick="wipeAll()">Effacer tout</button>
+      </div>
+    </div>
+    <p class="muted small" style="text-align:center;margin-top:22px">Mon Classeur — application autonome, sans compte ni serveur.</p>
+  </section>
+</div>
+
+<input type="file" id="importFile" accept="application/json" class="hidden">
+<div id="modalRoot"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+
+/* ---------- Constantes ---------- */
+const CATS = {
+  med:   {label:"Médical",       cls:"c-med",   e:"e-med",   emo:"🩺"},
+  admin: {label:"Administratif", cls:"c-admin", e:"e-admin", emo:"🏛️"},
+  fin:   {label:"Finances",      cls:"c-fin",   e:"e-fin",   emo:"💶"},
+  autre: {label:"Autre",         cls:"c-autre", e:"e-autre", emo:"📌"},
+};
+const DOCTYPES = ["Compte rendu","Ordonnance","Résultat d'analyse","Radio / Imagerie","Facture","Attestation","Contrat","Pièce d'identité / Carte","Courrier","Avis / Impôts","Autre"];
+const DOW = ["Lun","Mar","Mer","Jeu","Ven","Sam","Dim"];
+const MONTHS = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
+const LS = {rdv:"classeur.rdv.v1", docs:"classeur.docs.v1", set:"classeur.set.v1"};
+
+/* ---------- Etat ---------- */
+let RDV = load(LS.rdv, []);
+let DOCS = load(LS.docs, []);
+let SETTINGS = load(LS.set, {lead:1440, dark:null, notifiedIds:[]});
+let calCursor = new Date(); calCursor.setDate(1);
+let rdvFilter = "all", docFilter = "all";
+
+/* ---------- Utilitaires ---------- */
+function load(k, def){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):def; }catch(e){ return def; } }
+function save(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){ toast("⚠️ Stockage plein : allégez les pièces jointes."); } }
+function persist(){ save(LS.rdv,RDV); save(LS.docs,DOCS); save(LS.set,SETTINGS); }
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+function esc(s){ return (s==null?"":String(s)).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function el(html){ const t=document.createElement("template"); t.innerHTML=html.trim(); return t.content.firstElementChild; }
+
+function toast(msg){
+  const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show");
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove("show"),2600);
+}
+
+/* ---------- Dates ---------- */
+function rdvDate(r){ return new Date(r.date+"T"+(r.time||"00:00")); }
+function fmtDate(d){ return d.toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"long"}); }
+function fmtDateShort(iso){ if(!iso) return ""; const d=new Date(iso+"T00:00"); return d.toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit",year:"numeric"}); }
+function fmtTime(t){ return t? t.replace(":","h") : ""; }
+function daysUntil(d){ const now=new Date(); now.setHours(0,0,0,0); const t=new Date(d); t.setHours(0,0,0,0); return Math.round((t-now)/86400000); }
+function relLabel(n){
+  if(n===0) return "Aujourd'hui"; if(n===1) return "Demain"; if(n===-1) return "Hier";
+  if(n>1) return "Dans "+n+" jours"; return "Il y a "+(-n)+" jours";
+}
+
+/* ---------- Rendu commun ---------- */
+function catChip(cat){ const c=CATS[cat]||CATS.autre; return `<span class="chip ${c.cls}"><span class="dot"></span>${c.emo} ${c.label}</span>`; }
+
+/* ---------- Tableau de bord ---------- */
+function upcomingRdv(){
+  const now=new Date(); now.setHours(0,0,0,0);
+  return RDV.filter(r=>rdvDate(r)>=new Date(Date.now()-3600000)).sort((a,b)=>rdvDate(a)-rdvDate(b));
+}
+function docsWithExpiry(){
+  return DOCS.filter(d=>d.expiry).sort((a,b)=>new Date(a.expiry)-new Date(b.expiry));
+}
+function renderDash(){
+  const up=upcomingRdv();
+  const soon=up.filter(r=>daysUntil(rdvDate(r))<=7 && daysUntil(rdvDate(r))>=0);
+  const expSoon=docsWithExpiry().filter(d=>{const n=daysUntil(new Date(d.expiry)); return n<=45 && n>= -3650 && n<=45;});
+  const expUrgent=docsWithExpiry().filter(d=>{const n=daysUntil(new Date(d.expiry)); return n<=45;});
+  document.getElementById("sRdv").textContent=up.length;
+  document.getElementById("sSoon").textContent=soon.length;
+  document.getElementById("sDocs").textContent=DOCS.length;
+  document.getElementById("sExp").textContent=expUrgent.filter(d=>daysUntil(new Date(d.expiry))<=45).length;
+
+  const dr=document.getElementById("dashRdv");
+  if(!up.length){ dr.innerHTML=emptyBox("😌","Aucun rendez-vous à venir","Ajoutez votre prochain rendez-vous médical ou administratif."); }
+  else dr.innerHTML=up.slice(0,5).map(r=>rdvRow(r)).join("");
+
+  const dd=document.getElementById("dashDocs");
+  const list=expUrgent.slice(0,5);
+  if(!list.length){ dd.innerHTML=emptyBox("✅","Aucune échéance proche","Ajoutez une date d'échéance à vos papiers (carte d'identité, mutuelle…)."); }
+  else dd.innerHTML=list.map(d=>docRow(d)).join("");
+
+  document.getElementById("cntRdv").textContent=RDV.length;
+  document.getElementById("cntDocs").textContent=DOCS.length;
+}
+function emptyBox(big,t,s){ return `<div class="empty"><div class="big">${big}</div><b>${esc(t)}</b><div class="small" style="margin-top:4px">${esc(s)}</div></div>`; }
+
+/* ---------- Rendez-vous ---------- */
+function rdvRow(r){
+  const d=rdvDate(r), n=daysUntil(d);
+  let badge="";
+  if(n<0) badge=`<span class="badge b-ok">Passé</span>`;
+  else if(n===0) badge=`<span class="badge b-danger">Aujourd'hui</span>`;
+  else if(n<=2) badge=`<span class="badge b-warn">${relLabel(n)}</span>`;
+  else if(n<=7) badge=`<span class="badge b-soon">${relLabel(n)}</span>`;
+  const meta=[fmtDate(d), r.time?fmtTime(r.time):null, r.person, r.place].filter(Boolean).join(" · ");
+  return `<div class="row">
+    <div class="body">
+      <div class="title">${esc(r.title||"Rendez-vous")} ${catChip(r.cat)} ${badge}</div>
+      <div class="sub">${esc(meta)}${r.notes?" · "+esc(r.notes):""}</div>
+    </div>
+    <div class="actions">
+      <button class="btn icon small" title="Ajouter à Google Agenda" onclick="gcal('${r.id}')">🗓️</button>
+      <button class="btn icon small" title="Modifier" onclick="openRdv('${r.id}')">✏️</button>
+      <button class="btn icon small danger" title="Supprimer" onclick="delRdv('${r.id}')">🗑️</button>
+    </div>
+  </div>`;
+}
+function renderRdv(){
+  const q=(document.getElementById("rdvSearch").value||"").toLowerCase();
+  let list=[...RDV].sort((a,b)=>rdvDate(b)-rdvDate(a));
+  if(rdvFilter!=="all") list=list.filter(r=>r.cat===rdvFilter);
+  if(q) list=list.filter(r=>matches(rdvHaystack(r),q));
+  const box=document.getElementById("rdvList");
+  box.innerHTML = list.length ? list.map(rdvRow).join("")
+    : emptyBox("📅","Aucun rendez-vous","Cliquez sur « Nouveau rendez-vous » pour commencer.");
+}
+
+/* ---------- Documents ---------- */
+function docRow(d){
+  let badge="";
+  if(d.expiry){
+    const n=daysUntil(new Date(d.expiry));
+    if(n<0) badge=`<span class="badge b-danger">Expiré (${fmtDateShort(d.expiry)})</span>`;
+    else if(n<=45) badge=`<span class="badge b-warn">Expire ${relLabel(n).toLowerCase()}</span>`;
+    else badge=`<span class="badge b-ok">Valide → ${fmtDateShort(d.expiry)}</span>`;
+  }
+  const meta=[d.type||null, d.org||null, d.ref?("N° "+d.ref):null, d.date?("du "+fmtDateShort(d.date)):null].filter(Boolean).join(" · ");
+  const tags=(d.tags||[]).map(t=>`<span class="badge" style="background:var(--line);color:var(--muted)">#${esc(t)}</span>`).join(" ");
+  const att=d.file?`<button class="btn icon small" title="Ouvrir la pièce jointe" onclick="openFile('${d.id}')">📎</button>`:"";
+  return `<div class="row">
+    <div class="body">
+      <div class="title">${esc(d.title||"Document")} ${catChip(d.cat)} ${badge}</div>
+      <div class="sub">${esc(meta)}${d.notes?(meta?" · ":"")+esc(d.notes):""}${d.file?" · 📎 "+esc(d.fileName||"pièce jointe"):""}</div>
+      ${tags?`<div style="margin-top:4px;display:flex;gap:4px;flex-wrap:wrap">${tags}</div>`:""}
+    </div>
+    <div class="actions">
+      ${att}
+      <button class="btn icon small" title="Modifier" onclick="openDoc('${d.id}')">✏️</button>
+      <button class="btn icon small danger" title="Supprimer" onclick="delDoc('${d.id}')">🗑️</button>
+    </div>
+  </div>`;
+}
+/* Texte normalisé (sans accents) pour une recherche tolérante */
+function norm(s){ return (s==null?"":String(s)).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,""); }
+function docHaystack(d){ return norm([d.title,d.type,d.org,d.ref,d.notes,d.fileName,CATS[d.cat]?.label,(d.tags||[]).join(" "),d.date,d.expiry].join(" ")); }
+function rdvHaystack(r){ return norm([r.title,r.person,r.place,r.notes,CATS[r.cat]?.label,r.date].join(" ")); }
+function matches(hay,q){ return norm(q).split(/\s+/).filter(Boolean).every(w=>hay.includes(w)); }
+function docsSorted(list, mode){
+  const t=d=>d.date?new Date(d.date).getTime():0;
+  if(mode==="expiry") return list.sort((a,b)=>(a.expiry?new Date(a.expiry).getTime():Infinity)-(b.expiry?new Date(b.expiry).getTime():Infinity));
+  if(mode==="name") return list.sort((a,b)=>a.title.localeCompare(b.title,"fr"));
+  return list.sort((a,b)=>(t(b)-t(a)) || (b.createdAt||0)-(a.createdAt||0));
+}
+function renderDocs(){
+  const q=document.getElementById("docSearch").value||"";
+  const type=document.getElementById("docType").value, mode=document.getElementById("docSort").value;
+  let list=docsSorted([...DOCS], mode);
+  if(docFilter!=="all") list=list.filter(d=>d.cat===docFilter);
+  if(type!=="all") list=list.filter(d=>d.type===type);
+  if(q) list=list.filter(d=>matches(docHaystack(d),q));
+  const box=document.getElementById("docList");
+  box.innerHTML = list.length ? list.map(docRow).join("")
+    : (DOCS.length ? emptyBox("🔍","Aucun résultat","Essayez un autre mot : nom du praticien, type de document, mot-clé…")
+       : emptyBox("📄","Aucun papier classé","Ajoutez vos documents : comptes rendus, ordonnances, carte d'identité, mutuelle, factures…"));
+}
+function renderGlobalSearch(){
+  const q=document.getElementById("globalSearch").value||"";
+  const box=document.getElementById("globalResults");
+  if(!q.trim()){ box.classList.add("hidden"); box.innerHTML=""; return; }
+  const docs=docsSorted(DOCS.filter(d=>matches(docHaystack(d),q)),"recent").slice(0,8);
+  const rdvs=RDV.filter(r=>matches(rdvHaystack(r),q)).sort((a,b)=>rdvDate(b)-rdvDate(a)).slice(0,5);
+  let html="";
+  if(docs.length) html+=`<div class="muted small" style="padding:10px 16px 4px;font-weight:700">📄 Papiers (${docs.length})</div>`+docs.map(docRow).join("");
+  if(rdvs.length) html+=`<div class="muted small" style="padding:10px 16px 4px;font-weight:700">📅 Rendez-vous (${rdvs.length})</div>`+rdvs.map(rdvRow).join("");
+  box.innerHTML = html || emptyBox("🔍","Rien trouvé pour « "+q+" »","Vérifiez l'orthographe ou essayez un mot plus court.");
+  box.classList.remove("hidden");
+}
+
+/* ---------- Calendrier ---------- */
+function renderCal(){
+  document.getElementById("calDow").innerHTML = DOW.map(d=>`<div class="cal-dow">${d}</div>`).join("");
+  const y=calCursor.getFullYear(), m=calCursor.getMonth();
+  document.getElementById("calLabel").textContent = MONTHS[m]+" "+y;
+  const first=new Date(y,m,1);
+  let startDow=(first.getDay()+6)%7; // Lundi=0
+  const start=new Date(y,m,1-startDow);
+  const byDay={};
+  RDV.forEach(r=>{ (byDay[r.date]=byDay[r.date]||[]).push(r); });
+  const todayIso=new Date().toISOString().slice(0,10);
+  let cells="";
+  for(let i=0;i<42;i++){
+    const d=new Date(start); d.setDate(start.getDate()+i);
+    const iso=d.toISOString().slice(0,10);
+    const other = d.getMonth()!==m;
+    const evs=(byDay[iso]||[]).sort((a,b)=>(a.time||"").localeCompare(b.time||""));
+    let ev=evs.slice(0,3).map(r=>`<div class="cal-ev ${CATS[r.cat].e}" title="${esc(r.title)}">${r.time?fmtTime(r.time)+" ":""}${esc(r.title)}</div>`).join("");
+    if(evs.length>3) ev+=`<div class="cal-more">+${evs.length-3} autre(s)</div>`;
+    cells+=`<div class="cal-cell ${other?"other":""} ${iso===todayIso?"today":""}" onclick="openRdv(null,'${iso}')">
+      <span class="dnum">${d.getDate()}</span>${ev}</div>`;
+  }
+  document.getElementById("calBody").innerHTML=cells;
+}
+
+/* ---------- Modale Rendez-vous ---------- */
+function openRdv(id, presetDate){
+  const r = id ? RDV.find(x=>x.id===id) : {id:null,title:"",cat:"med",date:presetDate||new Date().toISOString().slice(0,10),time:"",person:"",place:"",notes:""};
+  const catOpts=Object.entries(CATS).map(([k,c])=>`<div class="opt ${r.cat===k?"sel":""}" data-cat="${k}">${c.emo} ${c.label}</div>`).join("");
+  const modal=el(`<div class="overlay"><div class="modal">
+    <div class="modal-head"><h3>${id?"Modifier le rendez-vous":"Nouveau rendez-vous"}</h3><div class="grow"></div><button class="btn icon" data-close>✕</button></div>
+    <div class="modal-body">
+      <div class="field"><label>Intitulé</label><input type="text" id="f_title" placeholder="Ex : Dentiste, Dr Martin" value="${esc(r.title)}"></div>
+      <div class="field"><label>Catégorie</label><div class="catpick" id="f_cat">${catOpts}</div></div>
+      <div class="two">
+        <div class="field"><label>Date</label><input type="date" id="f_date" value="${esc(r.date)}"></div>
+        <div class="field"><label>Heure <span class="hint">(optionnel)</span></label><input type="time" id="f_time" value="${esc(r.time)}"></div>
+      </div>
+      <div class="two">
+        <div class="field"><label>Praticien / Contact <span class="hint">(optionnel)</span></label><input type="text" id="f_person" value="${esc(r.person)}"></div>
+        <div class="field"><label>Lieu <span class="hint">(optionnel)</span></label><input type="text" id="f_place" value="${esc(r.place)}"></div>
+      </div>
+      <div class="field"><label>Notes <span class="hint">(documents à apporter, etc.)</span></label><textarea id="f_notes" rows="2">${esc(r.notes)}</textarea></div>
+    </div>
+    <div class="modal-foot">
+      ${id?'<button class="btn danger" data-del>Supprimer</button>':""}
+      <div class="grow"></div>
+      <button class="btn" data-close>Annuler</button>
+      <button class="btn primary" data-save>Enregistrer</button>
+    </div>
+  </div></div>`);
+  let cat=r.cat;
+  modal.querySelectorAll("#f_cat .opt").forEach(o=>o.onclick=()=>{cat=o.dataset.cat; modal.querySelectorAll("#f_cat .opt").forEach(x=>x.classList.toggle("sel",x===o));});
+  modal.querySelector("[data-save]").onclick=()=>{
+    const t=modal.querySelector("#f_title").value.trim();
+    const date=modal.querySelector("#f_date").value;
+    if(!t){ toast("Indiquez un intitulé."); return; }
+    if(!date){ toast("Indiquez une date."); return; }
+    const obj={id:r.id||uid(), title:t, cat, date, time:modal.querySelector("#f_time").value,
+      person:modal.querySelector("#f_person").value.trim(), place:modal.querySelector("#f_place").value.trim(),
+      notes:modal.querySelector("#f_notes").value.trim()};
+    if(r.id){ RDV=RDV.map(x=>x.id===r.id?obj:x); } else { RDV.push(obj); }
+    persist(); closeModal(); renderAll(); toast(id?"Rendez-vous modifié":"Rendez-vous ajouté ✓");
+  };
+  if(id) modal.querySelector("[data-del]").onclick=()=>{ closeModal(); delRdv(id); };
+  mountModal(modal);
+}
+function delRdv(id){
+  const r=RDV.find(x=>x.id===id); if(!r) return;
+  if(confirm("Supprimer le rendez-vous « "+r.title+" » ?")){ RDV=RDV.filter(x=>x.id!==id); persist(); renderAll(); toast("Rendez-vous supprimé"); }
+}
+
+/* ---------- Modale Document ---------- */
+function openDoc(id){
+  const d = id ? DOCS.find(x=>x.id===id) : {id:null,title:"",cat:"admin",type:"",org:"",tags:[],ref:"",date:new Date().toISOString().slice(0,10),expiry:"",notes:"",file:null,fileName:"",fileType:""};
+  const catOpts=Object.entries(CATS).map(([k,c])=>`<div class="opt ${d.cat===k?"sel":""}" data-cat="${k}">${c.emo} ${c.label}</div>`).join("");
+  const typeOpts=`<option value="">— Choisir —</option>`+DOCTYPES.map(t=>`<option ${d.type===t?"selected":""}>${esc(t)}</option>`).join("");
+  const modal=el(`<div class="overlay"><div class="modal">
+    <div class="modal-head"><h3>${id?"Modifier le papier":"Nouveau papier"}</h3><div class="grow"></div><button class="btn icon" data-close>✕</button></div>
+    <div class="modal-body">
+      <div class="field"><label>Nom du document</label><input type="text" id="f_title" placeholder="Ex : Compte rendu cardiologie, Carte Vitale, Avis d'imposition 2025" value="${esc(d.title)}"></div>
+      <div class="field"><label>Catégorie</label><div class="catpick" id="f_cat">${catOpts}</div></div>
+      <div class="two">
+        <div class="field"><label>Type de document</label><select id="f_type">${typeOpts}</select></div>
+        <div class="field"><label>Praticien / Organisme <span class="hint">(optionnel)</span></label><input type="text" id="f_org" placeholder="Ex : Dr Martin, CPAM, Mutuelle" value="${esc(d.org||"")}"></div>
+      </div>
+      <div class="field"><label>Mots-clés <span class="hint">(séparés par des virgules, pour retrouver facilement)</span></label><input type="text" id="f_tags" placeholder="Ex : cardio, 2025, urgent" value="${esc((d.tags||[]).join(", "))}"></div>
+      <div class="field"><label>Référence / N° <span class="hint">(optionnel)</span></label><input type="text" id="f_ref" value="${esc(d.ref)}"></div>
+      <div class="two">
+        <div class="field"><label>Date du document</label><input type="date" id="f_date" value="${esc(d.date)}"></div>
+        <div class="field"><label>Échéance / Expiration <span class="hint">(optionnel)</span></label><input type="date" id="f_expiry" value="${esc(d.expiry)}"></div>
+      </div>
+      <div class="field"><label>Notes <span class="hint">(résumé, ce qu'il faut retenir…)</span></label><textarea id="f_notes" rows="2">${esc(d.notes)}</textarea></div>
+      <div class="field"><label>Pièce jointe <span class="hint">(photo ou PDF, ≤ 4 Mo, reste sur l'appareil)</span></label>
+        <div class="filebox" id="f_drop">📎 Cliquez pour joindre une photo ou un PDF</div>
+        <input type="file" id="f_file" class="hidden" accept="image/*,application/pdf">
+        <div id="f_attach"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      ${id?'<button class="btn danger" data-del>Supprimer</button>':""}
+      <div class="grow"></div>
+      <button class="btn" data-close>Annuler</button>
+      <button class="btn primary" data-save>Enregistrer</button>
+    </div>
+  </div></div>`);
+  let cat=d.cat, fileData=d.file, fileName=d.fileName, fileType=d.fileType;
+  const attBox=modal.querySelector("#f_attach");
+  function refreshAtt(){
+    attBox.innerHTML = fileData ? `<div class="attach"><span>📎</span><span class="grow">${esc(fileName)}</span><button class="btn icon small danger" data-rmfile>✕</button></div>` : "";
+    const rm=attBox.querySelector("[data-rmfile]"); if(rm) rm.onclick=()=>{ fileData=null;fileName="";fileType=""; refreshAtt(); };
+  }
+  refreshAtt();
+  modal.querySelectorAll("#f_cat .opt").forEach(o=>o.onclick=()=>{cat=o.dataset.cat; modal.querySelectorAll("#f_cat .opt").forEach(x=>x.classList.toggle("sel",x===o));});
+  const fileInput=modal.querySelector("#f_file");
+  modal.querySelector("#f_drop").onclick=()=>fileInput.click();
+  fileInput.onchange=()=>{
+    const f=fileInput.files[0]; if(!f) return;
+    if(f.size>4*1024*1024){ toast("Fichier trop lourd (max 4 Mo)."); return; }
+    const rd=new FileReader();
+    rd.onload=()=>{ fileData=rd.result; fileName=f.name; fileType=f.type; refreshAtt(); };
+    rd.readAsDataURL(f);
+  };
+  modal.querySelector("[data-save]").onclick=()=>{
+    const t=modal.querySelector("#f_title").value.trim();
+    if(!t){ toast("Indiquez le nom du document."); return; }
+    const tags=modal.querySelector("#f_tags").value.split(",").map(s=>s.trim()).filter(Boolean);
+    const obj={id:d.id||uid(), title:t, cat, type:modal.querySelector("#f_type").value, org:modal.querySelector("#f_org").value.trim(), tags,
+      ref:modal.querySelector("#f_ref").value.trim(),
+      date:modal.querySelector("#f_date").value, expiry:modal.querySelector("#f_expiry").value,
+      notes:modal.querySelector("#f_notes").value.trim(), file:fileData, fileName, fileType, createdAt:d.createdAt||Date.now()};
+    if(d.id){ DOCS=DOCS.map(x=>x.id===d.id?obj:x); } else { DOCS.push(obj); }
+    persist(); closeModal(); renderAll(); toast(id?"Papier modifié":"Papier classé ✓");
+  };
+  if(id) modal.querySelector("[data-del]").onclick=()=>{ closeModal(); delDoc(id); };
+  mountModal(modal);
+}
+function delDoc(id){
+  const d=DOCS.find(x=>x.id===id); if(!d) return;
+  if(confirm("Supprimer le papier « "+d.title+" » ?")){ DOCS=DOCS.filter(x=>x.id!==id); persist(); renderAll(); toast("Papier supprimé"); }
+}
+function openFile(id){
+  const d=DOCS.find(x=>x.id===id); if(!d||!d.file) return;
+  const w=window.open(); if(!w){ toast("Autorisez les pop-ups pour ouvrir la pièce jointe."); return; }
+  if((d.fileType||"").startsWith("image/")){
+    w.document.write(`<title>${esc(d.fileName)}</title><body style="margin:0;background:#111;display:grid;place-items:center;min-height:100vh"><img src="${d.file}" style="max-width:100%;max-height:100vh"></body>`);
+  } else {
+    w.location.href=d.file;
+  }
+}
+
+/* ---------- Modale plumbing ---------- */
+function mountModal(node){
+  const root=document.getElementById("modalRoot"); root.innerHTML=""; root.appendChild(node);
+  node.addEventListener("click",e=>{ if(e.target===node) closeModal(); });
+  node.querySelectorAll("[data-close]").forEach(b=>b.onclick=closeModal);
+  document.addEventListener("keydown",escClose);
+  setTimeout(()=>{ const f=node.querySelector("input,textarea"); if(f) f.focus(); },50);
+}
+function closeModal(){ document.getElementById("modalRoot").innerHTML=""; document.removeEventListener("keydown",escClose); }
+function escClose(e){ if(e.key==="Escape") closeModal(); }
+
+/* ---------- Google Agenda / ICS ---------- */
+function pad(n){ return String(n).padStart(2,"0"); }
+function icsStamp(d){ return d.getUTCFullYear()+pad(d.getUTCMonth()+1)+pad(d.getUTCDate())+"T"+pad(d.getUTCHours())+pad(d.getUTCMinutes())+"00Z"; }
+function rdvStartEnd(r){
+  const start=rdvDate(r);
+  const end=new Date(start.getTime() + (r.time?60:24*60)*60000); // 1h si heure, sinon journée
+  return {start,end};
+}
+function gcal(id){
+  const r=RDV.find(x=>x.id===id); if(!r) return;
+  const {start,end}=rdvStartEnd(r);
+  const fmt=d=>d.getUTCFullYear()+pad(d.getUTCMonth()+1)+pad(d.getUTCDate())+"T"+pad(d.getUTCHours())+pad(d.getUTCMinutes())+"00Z";
+  const details=[r.person?("Avec : "+r.person):"", r.notes||"", "(Ajouté depuis Mon Classeur)"].filter(Boolean).join("\n");
+  const url="https://calendar.google.com/calendar/render?action=TEMPLATE"
+    +"&text="+encodeURIComponent("["+CATS[r.cat].label+"] "+r.title)
+    +"&dates="+fmt(start)+"/"+fmt(end)
+    +"&details="+encodeURIComponent(details)
+    +(r.place?"&location="+encodeURIComponent(r.place):"");
+  window.open(url,"_blank");
+}
+function buildICS(list){
+  let out="BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Mon Classeur//FR\r\nCALSCALE:GREGORIAN\r\n";
+  const lead=SETTINGS.lead||1440;
+  list.forEach(r=>{
+    const {start,end}=rdvStartEnd(r);
+    out+="BEGIN:VEVENT\r\n";
+    out+="UID:"+r.id+"@monclasseur\r\n";
+    out+="DTSTAMP:"+icsStamp(new Date())+"\r\n";
+    out+="DTSTART:"+icsStamp(start)+"\r\n";
+    out+="DTEND:"+icsStamp(end)+"\r\n";
+    out+="SUMMARY:"+icsEsc("["+CATS[r.cat].label+"] "+r.title)+"\r\n";
+    if(r.place) out+="LOCATION:"+icsEsc(r.place)+"\r\n";
+    const desc=[r.person?("Avec : "+r.person):"", r.notes||""].filter(Boolean).join("\\n");
+    if(desc) out+="DESCRIPTION:"+icsEsc(desc)+"\r\n";
+    out+="BEGIN:VALARM\r\nACTION:DISPLAY\r\nDESCRIPTION:Rappel\r\nTRIGGER:-PT"+lead+"M\r\nEND:VALARM\r\n";
+    out+="END:VEVENT\r\n";
+  });
+  out+="END:VCALENDAR\r\n"; return out;
+}
+function icsEsc(s){ return String(s).replace(/\\/g,"\\\\").replace(/;/g,"\\;").replace(/,/g,"\\,").replace(/\n/g,"\\n"); }
+function download(name,content,type){
+  const blob=new Blob([content],{type:type||"text/plain"}); const url=URL.createObjectURL(blob);
+  const a=document.createElement("a"); a.href=url; a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+function exportICSAll(){
+  if(!RDV.length){ toast("Aucun rendez-vous à exporter."); return; }
+  download("mon-classeur-agenda.ics", buildICS(RDV), "text/calendar");
+  toast("Fichier .ics créé — importez-le dans Google Agenda.");
+}
+
+/* ---------- Sauvegarde / Restauration ---------- */
+function exportData(){
+  const data={_app:"mon-classeur", _version:1, exportedAt:new Date().toISOString(), rdv:RDV, docs:DOCS, settings:{lead:SETTINGS.lead,dark:SETTINGS.dark}};
+  download("mon-classeur-sauvegarde-"+new Date().toISOString().slice(0,10)+".json", JSON.stringify(data,null,2), "application/json");
+  toast("Sauvegarde téléchargée ✓");
+}
+document.getElementById("importFile").onchange=function(){
+  const f=this.files[0]; if(!f) return;
+  const rd=new FileReader();
+  rd.onload=()=>{
+    try{
+      const data=JSON.parse(rd.result);
+      if(!data || (!Array.isArray(data.rdv)&&!Array.isArray(data.docs))) throw 0;
+      if(!confirm("Remplacer toutes les données actuelles par cette sauvegarde ?")) return;
+      RDV=Array.isArray(data.rdv)?data.rdv:[]; DOCS=Array.isArray(data.docs)?data.docs:[];
+      if(data.settings){ SETTINGS.lead=data.settings.lead||SETTINGS.lead; SETTINGS.dark=data.settings.dark; applyTheme(); }
+      persist(); renderAll(); toast("Sauvegarde restaurée ✓");
+    }catch(e){ toast("Fichier de sauvegarde invalide."); }
+  };
+  rd.readAsText(f); this.value="";
+};
+function wipeAll(){
+  if(!confirm("Effacer DÉFINITIVEMENT tous vos rendez-vous et papiers de cet appareil ?")) return;
+  if(!confirm("Êtes-vous vraiment sûr(e) ? Faites une sauvegarde avant si besoin.")) return;
+  RDV=[]; DOCS=[]; persist(); renderAll(); toast("Toutes les données ont été effacées.");
+}
+
+/* ---------- Notifications / Rappels ---------- */
+function updateNotifNotice(){
+  const box=document.getElementById("notifNotice");
+  if(!("Notification" in window)){ box.classList.add("hidden"); return; }
+  box.classList.toggle("hidden", Notification.permission!=="default");
+}
+function askNotif(){
+  if(!("Notification" in window)){ toast("Notifications non supportées par ce navigateur."); return; }
+  Notification.requestPermission().then(p=>{
+    updateNotifNotice();
+    toast(p==="granted"?"Rappels activés ✓":"Rappels non autorisés.");
+  });
+}
+function checkReminders(){
+  if(!("Notification" in window) || Notification.permission!=="granted") return;
+  const lead=SETTINGS.lead||1440; const now=Date.now();
+  SETTINGS.notifiedIds = SETTINGS.notifiedIds||[];
+  RDV.forEach(r=>{
+    const t=rdvDate(r).getTime(); const trigger=t-lead*60000;
+    if(now>=trigger && now<t && !SETTINGS.notifiedIds.includes(r.id)){
+      try{
+        new Notification("Rappel : "+r.title, {body:fmtDate(rdvDate(r))+(r.time?" à "+fmtTime(r.time):"")+(r.place?" — "+r.place:""), tag:r.id});
+      }catch(e){}
+      SETTINGS.notifiedIds.push(r.id); save(LS.set,SETTINGS);
+    }
+  });
+  // purge des ids de rdv passés/supprimés
+  const ids=new Set(RDV.filter(r=>rdvDate(r).getTime()>now).map(r=>r.id));
+  SETTINGS.notifiedIds=SETTINGS.notifiedIds.filter(id=>ids.has(id));
+}
+
+/* ---------- Thème ---------- */
+function applyTheme(){
+  if(SETTINGS.dark===true) document.documentElement.setAttribute("data-theme","dark");
+  else if(SETTINGS.dark===false) document.documentElement.setAttribute("data-theme","light");
+  else document.documentElement.removeAttribute("data-theme");
+  const chk=document.getElementById("setDark");
+  if(chk) chk.checked = SETTINGS.dark===true || (SETTINGS.dark===null && window.matchMedia("(prefers-color-scheme: dark)").matches);
+}
+
+/* ---------- Navigation ---------- */
+function switchTab(tab){
+  document.querySelectorAll("nav.tabs .tab").forEach(b=>b.classList.toggle("active",b.dataset.tab===tab));
+  ["dash","rdv","cal","docs","set"].forEach(v=>document.getElementById("view-"+v).classList.toggle("hidden",v!==tab));
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+/* ---------- Rendu global ---------- */
+function renderAll(){ renderDash(); renderRdv(); renderDocs(); renderCal(); renderGlobalSearch(); }
+
+/* ---------- Init ---------- */
+(function init(){
+  applyTheme();
+  document.querySelectorAll("nav.tabs .tab").forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
+  document.getElementById("btnTheme").onclick=()=>{ SETTINGS.dark = document.documentElement.getAttribute("data-theme")==="dark"?false:true; save(LS.set,SETTINGS); applyTheme(); };
+  document.getElementById("btnExport").onclick=exportData;
+  document.getElementById("btnImport").onclick=()=>document.getElementById("importFile").click();
+  document.getElementById("btnEnableNotif").onclick=askNotif;
+  document.getElementById("setNotif").onclick=askNotif;
+  document.getElementById("rdvSearch").oninput=renderRdv;
+  document.getElementById("docSearch").oninput=renderDocs;
+  document.getElementById("globalSearch").oninput=renderGlobalSearch;
+  const typeSel=document.getElementById("docType");
+  DOCTYPES.forEach(t=>typeSel.appendChild(el(`<option>${esc(t)}</option>`)));
+  typeSel.onchange=renderDocs;
+  document.getElementById("docSort").onchange=renderDocs;
+  document.getElementById("rdvFilters").querySelectorAll(".filter").forEach(b=>b.onclick=()=>{
+    rdvFilter=b.dataset.cat; document.querySelectorAll("#rdvFilters .filter").forEach(x=>x.classList.toggle("active",x===b)); renderRdv();
+  });
+  document.getElementById("docFilters").querySelectorAll(".filter").forEach(b=>b.onclick=()=>{
+    docFilter=b.dataset.cat; document.querySelectorAll("#docFilters .filter").forEach(x=>x.classList.toggle("active",x===b)); renderDocs();
+  });
+  document.getElementById("calPrev").onclick=()=>{ calCursor.setMonth(calCursor.getMonth()-1); renderCal(); };
+  document.getElementById("calNext").onclick=()=>{ calCursor.setMonth(calCursor.getMonth()+1); renderCal(); };
+  document.getElementById("calToday").onclick=()=>{ calCursor=new Date(); calCursor.setDate(1); renderCal(); };
+  const lead=document.getElementById("setLead"); lead.value=String(SETTINGS.lead||1440);
+  lead.onchange=()=>{ SETTINGS.lead=parseInt(lead.value,10); save(LS.set,SETTINGS); toast("Délai de rappel mis à jour."); };
+  document.getElementById("setDark").onchange=function(){ SETTINGS.dark=this.checked; save(LS.set,SETTINGS); applyTheme(); };
+
+  renderAll();
+  updateNotifNotice();
+  checkReminders();
+  setInterval(checkReminders, 60000);
+})();
+</script>
+</body>
+</html>
