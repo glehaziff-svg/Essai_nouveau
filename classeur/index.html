@@ -448,6 +448,8 @@ let RDV = load(LS.rdv, []);
 let DOCS = load(LS.docs, []);
 let SETTINGS = load(LS.set, {lead:1440, dark:null, notifiedIds:[]});
 let calCursor = new Date(); calCursor.setDate(1);
+/* Migration : les imports de fichier marqués "google" avant la synchro, et les ajouts manuels, ne doivent jamais être supprimés par la synchro */
+(function migrateSources(){ let c=false; RDV.forEach(r=>{ if(r.source==="google" && r.gKey && (!SETTINGS.gcalSyncedOnce || /^manuel-/.test(r.gKey))){ r.source="ics"; c=true; } }); if(c) save(LS.rdv,RDV); })();
 let rdvFilter = "all", docFilter = "all";
 
 /* ---------- Utilitaires ---------- */
@@ -556,6 +558,7 @@ function toast(msg){
 }
 
 /* ---------- Dates ---------- */
+function localISO(d){ d=d||new Date(); return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
 function rdvDate(r){ return new Date(r.date+"T"+(r.time||"00:00")); }
 function fmtDate(d){ return d.toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"long"}); }
 function fmtDateShort(iso){ if(!iso) return ""; const d=new Date(iso+"T00:00"); return d.toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit",year:"numeric"}); }
@@ -720,24 +723,39 @@ function renderCal(){
   const start=new Date(y,m,1-startDow);
   const byDay={};
   RDV.forEach(r=>{ (byDay[r.date]=byDay[r.date]||[]).push(r); });
-  const todayIso=new Date().toISOString().slice(0,10);
+  const todayIso=localISO();
   let cells="";
   for(let i=0;i<42;i++){
     const d=new Date(start); d.setDate(start.getDate()+i);
-    const iso=d.toISOString().slice(0,10);
+    const iso=localISO(d);
     const other = d.getMonth()!==m;
     const evs=(byDay[iso]||[]).sort((a,b)=>(a.time||"").localeCompare(b.time||""));
     let ev=evs.slice(0,3).map(r=>`<div class="cal-ev ${CATS[r.cat].e}" title="${esc(r.title)}">${r.time?fmtTime(r.time)+" ":""}${esc(r.title)}</div>`).join("");
     if(evs.length>3) ev+=`<div class="cal-more">+${evs.length-3} autre(s)</div>`;
-    cells+=`<div class="cal-cell ${other?"other":""} ${iso===todayIso?"today":""}" onclick="openRdv(null,'${iso}')">
+    cells+=`<div class="cal-cell ${other?"other":""} ${iso===todayIso?"today":""}" onclick="openDay('${iso}')">
       <span class="dnum">${d.getDate()}</span>${ev}</div>`;
   }
   document.getElementById("calBody").innerHTML=cells;
 }
 
+/* ---------- Vue d'un jour (calendrier) ---------- */
+function openDay(iso){
+  const d=new Date(iso+"T00:00");
+  const list=RDV.filter(r=>r.date===iso).sort((a,b)=>(a.time||"").localeCompare(b.time||""));
+  const m=el(`<div class="overlay"><div class="modal">
+    <div class="modal-head"><h3>📅 ${esc(d.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long",year:"numeric"}))}</h3><div class="grow"></div><button class="btn icon" data-close>✕</button></div>
+    <div class="modal-body" style="padding-top:4px">
+      <div class="list" style="margin:0 -20px">${list.length? list.map(rdvRow).join("") : emptyBox("🗓️","Aucun rendez-vous ce jour","Ajoutez-en un avec le bouton ci-dessous.")}</div>
+    </div>
+    <div class="modal-foot"><div class="grow"></div><button class="btn" data-close>Fermer</button><button class="btn primary" data-add>+ Ajouter un rendez-vous ce jour</button></div>
+  </div></div>`);
+  m.querySelector("[data-add]").onclick=()=>openRdv(null, iso);
+  mountModal(m);
+}
+
 /* ---------- Modale Rendez-vous ---------- */
 function openRdv(id, presetDate){
-  const r = id ? RDV.find(x=>x.id===id) : {id:null,title:"",cat:"med",date:presetDate||new Date().toISOString().slice(0,10),time:"",person:"",place:"",notes:""};
+  const r = id ? RDV.find(x=>x.id===id) : {id:null,title:"",cat:"med",date:presetDate||localISO(),time:"",person:"",place:"",notes:""};
   const catOpts=Object.entries(CATS).map(([k,c])=>`<div class="opt ${r.cat===k?"sel":""}" data-cat="${k}">${c.emo} ${c.label}</div>`).join("");
   const modal=el(`<div class="overlay"><div class="modal">
     <div class="modal-head"><h3>${id?"Modifier le rendez-vous":"Nouveau rendez-vous"}</h3><div class="grow"></div><button class="btn icon" data-close>✕</button></div>
@@ -784,7 +802,7 @@ function delRdv(id){
 
 /* ---------- Modale Document ---------- */
 function openDoc(id){
-  const d = id ? DOCS.find(x=>x.id===id) : {id:null,title:"",cat:"admin",type:"",org:"",folder:"",tags:[],ref:"",date:new Date().toISOString().slice(0,10),expiry:"",notes:"",files:[]};
+  const d = id ? DOCS.find(x=>x.id===id) : {id:null,title:"",cat:"admin",type:"",org:"",folder:"",tags:[],ref:"",date:localISO(),expiry:"",notes:"",files:[]};
   const catOpts=Object.entries(CATS).map(([k,c])=>`<div class="opt ${d.cat===k?"sel":""}" data-cat="${k}">${c.emo} ${c.label}</div>`).join("");
   const typeOpts=`<option value="">— Choisir —</option>`+DOCTYPES.map(t=>`<option ${d.type===t?"selected":""}>${esc(t)}</option>`).join("");
   const modal=el(`<div class="overlay"><div class="modal">
@@ -856,7 +874,7 @@ function openDoc(id){
   function prefill(a){
     const q=id=>modal.querySelector(id);
     if(a.type && !q("#f_type").value) q("#f_type").value=a.type;
-    if(a.date && q("#f_date").value===new Date().toISOString().slice(0,10)) q("#f_date").value=a.date;
+    if(a.date && q("#f_date").value===localISO()) q("#f_date").value=a.date;
     if(a.org && !q("#f_org").value) q("#f_org").value=a.org;
     if(!d.id && a.cat && a.cat!=="autre"){ cat=a.cat; modal.querySelectorAll("#f_cat .opt").forEach(x=>x.classList.toggle("sel",x.dataset.cat===cat)); refreshFolders(); }
     if(a.folder && !q("#f_folder").value.trim()) q("#f_folder").value=a.folder;
@@ -1133,15 +1151,23 @@ function importICS(text, opts){
         const moved=RDV.find(x=>x.source==="google" && x.gKey && x.gKey.startsWith(evUid+"|") && x.gKey!==key && !feedKeys.has(x.gKey));
         if(moved){ byKey.delete(moved.gKey); applyUpdate(moved,f); byKey.set(key,moved); return; }
       }
-      const n={id:uid(), title, cat, date:o.date, time:o.time, person:"", place, notes, gNotes:notes, gKey:key, source:"google"};
+      const n={id:uid(), title, cat, date:o.date, time:o.time, person:"", place, notes, gNotes:notes, gKey:key, source: opts.sync?"google":"ics"};
       RDV.push(n); byKey.set(key,n); added++;
     });
   });
-  if(opts.sync){ // supprimés dans Google → retirés ici (rendez-vous récents/à venir seulement, jamais l'historique)
+  if(opts.sync){
+    // Doublons : même titre, même date, même heure → on garde celui qui est relié à Google (puis le manuel)
+    const sig=r=>norm(r.title)+"|"+r.date+"|"+(r.time||"");
+    const score=x=>(x.gKey&&feedKeys.has(x.gKey))?2:(x.source==="google"||x.source==="ics")?0:1;
+    const keep=new Map();
+    RDV.forEach(r=>{ const k=sig(r); const cur=keep.get(k); if(!cur || score(r)>score(cur)) keep.set(k,r); });
+    const kept=new Set([...keep.values()].map(r=>r.id));
+    const dupBefore=RDV.length; RDV=RDV.filter(r=>kept.has(r.id)); const deduped=dupBefore-RDV.length;
+    // Supprimés dans Google → retirés ici (rendez-vous récents/à venir seulement, jamais l'historique)
     const cutoff=new Date(); cutoff.setDate(cutoff.getDate()-30); cutoff.setHours(0,0,0,0);
     const before=RDV.length;
     RDV=RDV.filter(r=>!(r.source==="google" && r.gKey && !feedKeys.has(r.gKey) && rdvDate(r)>=cutoff));
-    removed=before-RDV.length;
+    removed=before-RDV.length+deduped;
   }
   persist(); renderAll();
   const changed=added+updated+removed;
@@ -1173,7 +1199,7 @@ document.getElementById("icsFile").onchange=function(){
 async function exportData(){
   let files=[]; try{ files=await idb.all(); }catch(e){}
   const data={_app:"mon-classeur", _version:2, exportedAt:new Date().toISOString(), rdv:RDV, docs:DOCS, files, settings:{lead:SETTINGS.lead,dark:SETTINGS.dark}};
-  download("mon-classeur-sauvegarde-"+new Date().toISOString().slice(0,10)+".json", JSON.stringify(data,null,2), "application/json");
+  download("mon-classeur-sauvegarde-"+localISO()+".json", JSON.stringify(data,null,2), "application/json");
   toast("Sauvegarde téléchargée ✓");
 }
 document.getElementById("importFile").onchange=function(){
