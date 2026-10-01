@@ -1,0 +1,159 @@
+<title>Diagnostic baisse Yaplusqa</title>
+<style>
+:root{
+  --fond:#F2F4F3; --papier:#FFFFFF; --encre:#18231F; --doux:#5A6964; --trait:#D8E0DC;
+  --vert:#14795A; --vert-f:#0E5C43; --tete:#173A30;
+  --ok-bg:#E3F3EA; --ok-fg:#155C3B; --ind-bg:#FFF3D6; --ind-fg:#7A5300; --hyp-bg:#EDEBFA; --hyp-fg:#43369A;
+  --sans:"Segoe UI",Roboto,Helvetica,Arial,sans-serif; --mono:"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --fond:#0E1513; --papier:#16201C; --encre:#E6EEEA; --doux:#9DB0A8; --trait:#2A3631;
+  --vert:#46B98D; --vert-f:#6CCEA6; --tete:#1E3A31;
+  --ok-bg:#163A2A; --ok-fg:#8FE2B7; --ind-bg:#3A2E10; --ind-fg:#F2CF7C; --hyp-bg:#262247; --hyp-fg:#C3BBF5;
+}}
+:root[data-theme="dark"]{
+  --fond:#0E1513; --papier:#16201C; --encre:#E6EEEA; --doux:#9DB0A8; --trait:#2A3631;
+  --vert:#46B98D; --vert-f:#6CCEA6; --tete:#1E3A31;
+  --ok-bg:#163A2A; --ok-fg:#8FE2B7; --ind-bg:#3A2E10; --ind-fg:#F2CF7C; --hyp-bg:#262247; --hyp-fg:#C3BBF5;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fond);color:var(--encre);font-family:var(--sans);font-size:15.5px;line-height:1.6}
+.wrap{max-width:1040px;margin:0 auto;padding:36px 22px 80px}
+.eyebrow{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--vert);margin:0 0 8px}
+h1{font-size:clamp(1.6rem,1.2rem+1.8vw,2.3rem);margin:0;line-height:1.15;text-wrap:balance}
+.meta{color:var(--doux);font-size:14px;margin:10px 0 28px}
+h2{font-size:1.2rem;margin:42px 0 14px;padding-bottom:8px;border-bottom:2px solid var(--trait);color:var(--vert-f)}
+.exec{background:var(--papier);border:1px solid var(--trait);border-left:5px solid var(--vert);border-radius:10px;padding:18px 22px}
+.exec p{margin:.45rem 0}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:22px 0 4px}
+.kpi{background:var(--papier);border:1px solid var(--trait);border-radius:10px;padding:14px 16px}
+.kpi .l{font-size:12px;color:var(--doux);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.kpi .v{font-size:1.5rem;font-weight:700;font-variant-numeric:tabular-nums;margin-top:4px}
+.kpi .s{font-size:13px;color:var(--doux)}
+.up{color:var(--ok-fg)} .down{color:#B3261E}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .down{color:#FF9B93}}
+:root[data-theme="dark"] .down{color:#FF9B93}
+.tbl{overflow-x:auto;background:var(--papier);border:1px solid var(--trait);border-radius:10px}
+table{border-collapse:collapse;width:100%;min-width:760px;font-size:14px}
+th{background:var(--tete);color:#fff;text-align:left;font-weight:600;padding:10px 12px;font-size:13px}
+td{padding:10px 12px;border-top:1px solid var(--trait);vertical-align:top}
+td.num{font-variant-numeric:tabular-nums}
+.pill{display:inline-block;font-size:12px;font-weight:700;border-radius:20px;padding:2px 10px;white-space:nowrap}
+.f{background:var(--ok-bg);color:var(--ok-fg)} .i{background:var(--ind-bg);color:var(--ind-fg)} .h{background:var(--hyp-bg);color:var(--hyp-fg)}
+.p1{background:#B3261E;color:#fff} .p2{background:#B9820A;color:#fff} .p3{background:#6B7A74;color:#fff}
+ol,ul{padding-left:22px} li{margin:.4rem 0}
+.box{background:var(--papier);border:1px solid var(--trait);border-radius:10px;padding:16px 22px}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.cols h3{margin:0 0 6px;font-size:1rem}
+code{font-family:var(--mono);font-size:13px;background:var(--fond);border:1px solid var(--trait);border-radius:4px;padding:1px 5px}
+.foot{color:var(--doux);font-size:13px;margin-top:40px}
+</style>
+
+<div class="wrap">
+<p class="eyebrow">Diagnostic SEO · yaplusqa.fr</p>
+<h1>Baisse de visibilité depuis le 24 septembre : ce que disent vraiment les données</h1>
+<p class="meta">Analyse du 1<sup>er</sup> octobre 2026 · Sources : export Google Search Console (14/07 → 28/09/2026), capture du rapport Performances, deux notes d'audit précédentes, documentation Google. Aucune modification effectuée sur le site ni dans Search Console.</p>
+
+<div class="kpis">
+  <div class="kpi"><div class="l">Impressions / jour</div><div class="v up">11,6</div><div class="s">24–28/09, contre 7,5 sur les 28 j précédents</div></div>
+  <div class="kpi"><div class="l">Position moyenne pondérée</div><div class="v up">6,1</div><div class="s">24–28/09, contre 9,0 du 17 au 23/09</div></div>
+  <div class="kpi"><div class="l">Clics</div><div class="v down">2</div><div class="s">24–28/09, contre 6 à 9 attendus</div></div>
+  <div class="kpi"><div class="l">CTR hebdomadaire</div><div class="v down">10,7 %</div><div class="s">semaine du 21/09, contre 35,3 % fin août</div></div>
+</div>
+
+<h2>1. Diagnostic exécutif</h2>
+<div class="exec">
+<p>Sur les données disponibles (jusqu'au 28/09), <strong>la visibilité n'a pas baissé après le 24/09 : elle a augmenté.</strong> Impressions à 11,6/jour contre 7,5/jour (probabilité ≈ 0,1 % à rythme constant) et position moyenne pondérée meilleure (6,1 contre 9,0).</p>
+<p><strong>Ce qui baisse, ce sont les clics</strong> : 2 du 24 au 28/09 contre 6 à 9 attendus (probabilité ≈ 1 à 4,5 %). C'est une chute du taux de clic, <strong>amorcée dès la semaine du 7–14/09, donc avant la mise à jour antispam</strong>.</p>
+<p>Cette signature (plus d'affichages, moins de clics) ne correspond pas à une rétrogradation antispam. Elle ne l'exclut pas : le déploiement était en cours et les données s'arrêtent au 28/09.</p>
+<p>Piste la plus probable à tester : moins de recherches sur le nom « yaplusqa » (seule source de clics identifiée) et dilution par de nouvelles impressions hors marque peu cliquées.</p>
+<p>Le site lui-même n'a pas pu être testé : mon environnement bloque l'accès réseau à yaplusqa.fr (blocage de mon côté, pas du site).</p>
+</div>
+
+<h2>2. Observations</h2>
+<div class="tbl"><table>
+<thead><tr><th>Constat</th><th>Preuve ou méthode</th><th>URL / requête</th><th>Confiance</th></tr></thead>
+<tbody>
+<tr><td>Impressions en hausse après le 24/09 : 58 en 5 jours (11,6/j) ; semaine du 21–27/09 = 84, plus haut niveau de la période.</td><td>Graphique.csv, agrégats jour et semaine ; test de Poisson P(≥58) = 0,10 % au rythme des 28 jours précédents.</td><td>Site entier</td><td><span class="pill f">Fait vérifié</span></td></tr>
+<tr><td>Position moyenne pondérée améliorée : 6,1 (24–28/09) contre 9,0 (17–23/09).</td><td>Graphique.csv, pondération par impressions. Indicateur agrégé, sensible au mélange des requêtes.</td><td>Site entier</td><td><span class="pill f">Fait vérifié</span></td></tr>
+<tr><td>Clics en baisse : 2 (24–28/09) contre 12 (17–23/09).</td><td>Graphique.csv ; P(≤2) entre 0,9 % et 4,5 % selon la période de référence. Petits volumes.</td><td>Site entier</td><td><span class="pill f">Fait vérifié</span></td></tr>
+<tr><td>Le CTR s'érodait avant la mise à jour : 35,3 % (sem. 31/08) → 18,6 % (07/09) → 11,1 % (14/09) → 10,7 % (21/09).</td><td>Agrégats hebdomadaires de Graphique.csv.</td><td>Site entier</td><td><span class="pill f">Fait vérifié</span></td></tr>
+<tr><td>Tous les clics rattachés à une requête viennent de la marque (23 sur 23). Les requêtes hors marque listées totalisent 36 impressions et 0 clic.</td><td>Requêtes.csv.</td><td>yaplusqa, yaplus… / solitude handicap, rompre la solitude…</td><td><span class="pill f">Fait vérifié</span></td></tr>
+<tr><td>80 % des impressions et 72 % des clics portent sur des requêtes que Google ne communique pas (anonymisation).</td><td>Somme de Requêtes.csv comparée aux totaux.</td><td>—</td><td><span class="pill f">Fait vérifié</span> limite majeure</td></tr>
+<tr><td>Trois variantes de l'accueil ont reçu des impressions sur la période.</td><td>Pages.csv. État actuel des redirections non testé.</td><td><code>https://</code>, <code>https://www.</code>, <code>http://</code></td><td><span class="pill f">Fait vérifié</span></td></tr>
+<tr><td>Pages locales : 9 URL, 25 impressions, 1 clic sur 3 mois, soit environ 3 % des impressions par page.</td><td>Pages.csv.</td><td>/auray, /lorient, /pontivy, /hennebont…</td><td><span class="pill f">Fait vérifié</span></td></tr>
+<tr><td>Aucune page de profil ou de membre parmi les URL ayant eu des impressions.</td><td>Pages.csv (30 URL). Ne prouve pas l'absence de pages de membres indexées sans impression.</td><td>—</td><td><span class="pill f">Fait vérifié</span></td></tr>
+<tr><td>Position bien plus faible sur ordinateur (15,7) que sur mobile (4,4).</td><td>Appareils.csv. Cause inconnue, probablement un mélange de requêtes différent.</td><td>—</td><td><span class="pill f">Fait vérifié</span></td></tr>
+<tr><td>Mise à jour antispam de septembre 2026 : début le 24/09 à 9 h 15 (heure du Pacifique), jusqu'à deux semaines, encore en cours le 29/09.</td><td>Recherche Web, plusieurs sources citant le tableau de bord Google. Accès direct au tableau de bord bloqué dans mon environnement.</td><td>—</td><td><span class="pill f">Fait recoupé</span> statut au 01/10 non vérifié</td></tr>
+<tr><td>Formulation répétée dans les extraits de pages locales (« Yaplusqa réunit à [ville] et dans le département 56… »).</td><td>Rapportée par l'audit précédent ; je n'ai pas pu la reproduire.</td><td>/sarzeau, /vannes, /lorient, /hennebont, /locmine</td><td><span class="pill i">Indice</span></td></tr>
+<tr><td>Accès réseau à yaplusqa.fr refusé dans mon environnement.</td><td>curl : en-tête <code>x-deny-reason: host_not_allowed</code> renvoyé par le proxy de l'environnement.</td><td>—</td><td><span class="pill f">Fait vérifié</span> sans lien avec le site</td></tr>
+</tbody></table></div>
+
+<h2>3. Hypothèses classées</h2>
+<div class="tbl"><table>
+<thead><tr><th>Hypothèse</th><th>Arguments pour</th><th>Arguments contre</th><th>Test décisif</th><th>Priorité</th></tr></thead>
+<tbody>
+<tr><td>Moins de recherches sur le nom « yaplusqa »</td><td>Les seuls clics identifiés viennent de la marque (CTR 79 %) : une petite baisse de ces recherches suffit à faire chuter les clics.</td><td>Pas de données quotidiennes par requête dans l'export.</td><td>Search Console, comparaison 17–23/09 / 24–30/09, filtre requête contenant « yaplus ».</td><td><span class="pill p1">P1</span></td></tr>
+<tr><td>CTR dilué par de nouvelles impressions hors marque peu cliquées</td><td>Impressions en hausse et CTR en baisse depuis début septembre ; hors marque = 0 clic.</td><td>80 % des impressions ne sont pas attribuées à une requête.</td><td>Même comparaison, onglets Requêtes et Pages, tri par écart d'impressions.</td><td><span class="pill p1">P1</span></td></tr>
+<tr><td>Ressenti issu de recherches manuelles</td><td>Les données ne montrent pas de recul de visibilité.</td><td>—</td><td>Comparer les requêtes testées à la main avec leur position dans Search Console.</td><td><span class="pill p2">P2</span></td></tr>
+<tr><td>Effet de la mise à jour antispam sur certaines pages (pages locales sur un même modèle)</td><td>Coïncidence de date ; la règle Google sur les pages satellites vise les pages par ville qui mènent vers une même page ; formulation répétée rapportée.</td><td>Impressions et position du site en hausse après le 24/09 ; pages locales ≈ 3 % des impressions ; baisse du CTR antérieure.</td><td>Comparaison avant/après par URL locale ; nouvelle mesure au moins une semaine après la fin du déploiement.</td><td><span class="pill p2">P2</span></td></tr>
+<tr><td>Variation aléatoire sur de petits volumes</td><td>0 à 5 clics par jour ; semaine du 14/09 déjà à 5 clics.</td><td>Probabilité de 1 à 4,5 % sur cette fenêtre.</td><td>Deux à trois semaines de données supplémentaires.</td><td><span class="pill p2">P2</span></td></tr>
+<tr><td>Problème technique (redirections, canonique, noindex, pare-feu bloquant Googlebot)</td><td>Trois variantes de l'accueil avec impressions.</td><td>Un blocage de l'exploration ferait chuter les impressions, or elles montent.</td><td>Inspection d'URL sur 5 pages perdantes et 5 stables ; test des redirections ; statistiques d'exploration.</td><td><span class="pill p2">P2</span> doublons d'hôte · <span class="pill p3">P3</span> comme cause</td></tr>
+<tr><td>Réponses IA (AI Overviews, AI Mode) captant des clics</td><td>Impression d'être moins cité.</td><td>Aucune donnée ; n'expliquerait pas une baisse sur les recherches de marque.</td><td>Rapport Search Console des fonctionnalités d'IA s'il existe ; série fixe de requêtes testée à dates régulières.</td><td><span class="pill p3">P3</span></td></tr>
+</tbody></table></div>
+
+<h2>4. Vérifications immédiatement réalisables</h2>
+<div class="box"><ol>
+<li><strong>Search Console → Performances → Date → Comparer</strong> 17–23/09 avec 24–30/09 (dès que le 29 et le 30 sont disponibles) : onglets Requêtes, Pages, Appareils.</li>
+<li>Même comparaison avec le filtre <em>Requête contient « yaplus »</em>, puis <em>ne contient pas</em> : sépare la marque du reste.</li>
+<li><strong>Sécurité et actions manuelles</strong> : confirmer l'absence d'action manuelle et de problème de sécurité.</li>
+<li><strong>Inspection de l'URL</strong> sur l'accueil, /guide, /rencontre-handicap, /faq, l'article « rompre la solitude », /auray, /lorient, /pontivy : indexation, canonique déclarée et retenue par Google, date de dernière exploration, HTML rendu.</li>
+<li>Vérifier que <code>http://yaplusqa.fr/</code>, <code>http://www.yaplusqa.fr/</code> et <code>https://www.yaplusqa.fr/</code> redirigent en 301 vers <code>https://yaplusqa.fr/</code>.</li>
+<li><strong>Indexation → Pages</strong> et <strong>Sitemaps</strong> : pages indexées et non indexées, motifs, dernière lecture du sitemap.</li>
+<li><strong>Paramètres → Statistiques sur l'exploration</strong> : erreurs 4xx/5xx ou baisse des passages de Googlebot depuis le 10/09.</li>
+<li>Lister les mises en production depuis le 1<sup>er</sup> septembre (la baisse du CTR commence la semaine du 07/09).</li>
+<li>Comparer le texte de trois pages locales (code source).</li>
+<li>Nouvel export une semaine après la fin officielle de la mise à jour.</li>
+</ol></div>
+
+<h2>5. Données et accès manquants</h2>
+<div class="box"><ul>
+<li><strong>Export Search Console en mode comparaison</strong> (17–23/09 / 24–30/09) par requête, page et appareil : identifier les requêtes et URL qui perdent. L'export actuel ne donne que des totaux sur trois mois.</li>
+<li><strong>Données du 29/09 au 01/10</strong> : savoir si la baisse des clics continue (les derniers jours sont souvent provisoires).</li>
+<li><strong>Résultats d'inspection d'URL</strong> : canonique retenue, indexation, rendu.</li>
+<li><strong>Accès réseau à yaplusqa.fr dans mon environnement</strong> (et à status.search.google.com) : tester codes HTTP, redirections, robots.txt, sitemap, balises, et mesurer la similarité des pages locales.</li>
+<li><strong>Historique des modifications du site</strong> depuis le 01/09 (titres, modèles de pages, liens, nouvelles pages) : expliquer l'érosion du CTR, antérieure à la mise à jour.</li>
+<li><strong>Rapport Search Console des fonctionnalités d'IA</strong>, s'il est disponible pour la propriété.</li>
+<li><strong>Journaux serveur, CDN ou pare-feu</strong> : exclure un blocage de Googlebot.</li>
+<li><strong>Liens entrants</strong> (priorité basse).</li>
+</ul></div>
+
+<h2>6. Plan d'action</h2>
+<div class="cols">
+<div class="box"><h3>Urgent (vérifier, sans modifier)</h3><ul>
+<li>Faire l'export comparatif <strong>avant toute modification</strong>, pour garder une base de référence.</li>
+<li>Contrôler actions manuelles et sécurité.</li>
+<li>Inspecter les URL de la liste.</li>
+</ul></div>
+<div class="box"><h3>À tester (avec votre accord)</h3><ul>
+<li>Rediriger en 301 toutes les variantes vers <code>https://yaplusqa.fr/</code> : bonne pratique, sans lien démontré avec la baisse.</li>
+<li>Appliquer les nouveaux titres et descriptions pour agir sur le CTR, en <strong>notant la date</strong> pour mesurer leur effet séparément.</li>
+<li>Donner à chaque page locale un contenu propre à sa ville, ou les regrouper, après analyse URL par URL.</li>
+</ul></div>
+<div class="box"><h3>À ne pas faire maintenant</h3><ul>
+<li>Supprimer ou réécrire en masse pages locales ou articles sur la seule base de la coïncidence de dates.</li>
+<li>Désavouer des liens, changer les URL ou refondre le site pendant le déploiement.</li>
+<li>Conclure à une « pénalité IA » à partir de quelques tests.</li>
+<li>Prendre le score Lighthouse de 99 pour une preuve de bon classement : il mesure la qualité technique d'une page, pas l'indexation ni la pertinence.</li>
+</ul></div>
+</div>
+
+<h2>7. Conclusion</h2>
+<div class="cols">
+<div class="box"><h3>Ce que l'on sait</h3><p>Jusqu'au 28/09, impressions et position moyenne ont progressé après le 24/09. Les clics ont baissé sur de petits volumes, et le CTR s'érodait déjà avant la mise à jour. Tout le trafic attribué vient de la marque. La mise à jour antispam a commencé le 24/09.</p></div>
+<div class="box"><h3>Ce que l'on soupçonne</h3><p>Une baisse des recherches sur le nom du site et une dilution du CTR par des impressions hors marque peu cliquées. Une fragilité des pages locales au regard de la règle sur les pages satellites, sans preuve qu'elle ait joué.</p></div>
+<div class="box"><h3>Ce qu'on ne peut pas encore déterminer</h3><p>Quelles requêtes et URL ont perdu des clics ; l'état technique actuel du site ; ce qui s'est passé après le 28/09 ; la visibilité réelle dans les réponses IA.</p></div>
+</div>
+
+<p class="foot">Limite méthodologique : Search Console agrège différemment par page et par propriété (la somme des impressions par page dépasse le total du site), et masque les requêtes rares. Les tests de probabilité supposent un rythme constant ; ils indiquent un ordre de grandeur, pas une preuve de cause. Références : Google Search Central, « Spam policies for Google web search » et « Debugging drops in Google Search traffic » ; tableau de bord Google Search Status, « September 2026 spam update ».</p>
+</div>
