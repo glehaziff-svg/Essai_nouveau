@@ -297,8 +297,10 @@
         <button class="filter" data-cat="autre">Autre</button>
       </div>
       <div class="grow"></div>
+      <select id="docFolder" style="width:auto;padding:7px 10px;font-size:13px"><option value="all">Tous les dossiers</option></select>
       <select id="docType" style="width:auto;padding:7px 10px;font-size:13px"><option value="all">Tous les types</option></select>
       <select id="docSort" style="width:auto;padding:7px 10px;font-size:13px">
+        <option value="folder">Par dossier</option>
         <option value="recent">Plus récents</option>
         <option value="expiry">Par échéance</option>
         <option value="name">Nom A → Z</option>
@@ -405,6 +407,38 @@ const CATS = {
   autre: {label:"Autre",         cls:"c-autre", e:"e-autre", emo:"📌"},
 };
 const DOCTYPES = ["Compte rendu","Ordonnance","Résultat d'analyse","Radio / Imagerie","Facture","Attestation","Contrat","Pièce d'identité / Carte","Courrier","Avis / Impôts","Autre"];
+const FOLDERS = {
+  admin:["Identité & état civil","Logement","Impôts","Assurances","Retraite / CARSAT","CAF / Aides","Véhicule","Famille","Travail / Emploi","Justice","Courriers divers"],
+  med:["Médecin traitant","Spécialistes","Ordonnances","Analyses & examens","Hôpital / CHBA","Mutuelle & Sécu","Kiné / Rééducation","Pharmacie"],
+  fin:["Banque","Crédits","Factures énergie","Téléphone / Internet","Abonnements","Épargne"],
+  autre:["Divers"],
+};
+/* mots-indices → dossier (ordre = priorité) */
+const FOLDER_HINTS = [
+  ["Mutuelle & Sécu",["cpam","ameli","assurance maladie","securite sociale","mutuelle","remboursement","carte vitale","complementaire sante"]],
+  ["Impôts",["avis d'impot","impot","taxe fonciere","taxe d'habitation","dgfip","finances publiques"]],
+  ["CAF / Aides",["caf ","allocations familiales","apl","mdph","aah","aide sociale"]],
+  ["Retraite / CARSAT",["retraite","carsat","agirc","arrco","pension"]],
+  ["Identité & état civil",["carte d'identite","carte nationale","passeport","acte de naissance","livret de famille","etat civil"]],
+  ["Véhicule",["carte grise","immatriculation","controle technique","permis de conduire","vehicule","toyota","garage"]],
+  ["Logement",["loyer","bail","syndic","copropriete","quittance","logement","proprietaire","locataire","notaire"]],
+  ["Assurances",["assurance","assureur","contrat d'assurance","sinistre","maif","macif","axa","allianz","groupama","matmut"]],
+  ["Travail / Emploi",["employeur","bulletin de paie","fiche de paie","france travail","pole emploi","contrat de travail","urssaf"]],
+  ["Justice",["tribunal","avocat","huissier","jugement","convocation"]],
+  ["Ordonnances",["ordonnance","prescription","prescrit"]],
+  ["Analyses & examens",["laboratoire","analyse","resultat","prelevement","radiograph","scanner","irm","echograph","fibroscan","imagerie","biologie"]],
+  ["Hôpital / CHBA",["chba","centre hospitalier","hopital","clinique","hospitalisation","urgences","compte rendu operatoire"]],
+  ["Kiné / Rééducation",["kine","kinesitherap","reeducation","ergotherap","orthophon"]],
+  ["Pharmacie",["pharmacie","medicament","posologie"]],
+  ["Spécialistes",["cardiolog","ophtalmolog","dermatolog","neurolog","gastro","rhumatolog","pneumolog","urolog","gyneco","orl ","specialiste"]],
+  ["Médecin traitant",["medecin traitant","medecin generaliste","generaliste"]],
+  ["Factures énergie",["edf","engie","totalenergies","electricite","gaz","eau "]],
+  ["Téléphone / Internet",["orange","sfr","free ","bouygues","telephone","internet","box "]],
+  ["Crédits",["credit","pret","echeancier","emprunt"]],
+  ["Banque",["banque","compte courant","releve de compte","credit agricole","caisse d'epargne","societe generale","bnp","lcl","boursorama","la banque postale"]],
+  ["Abonnements",["abonnement","netflix","canal"]],
+];
+function guessFolder(text){ const t=norm(text); for(const [f,ws] of FOLDER_HINTS) if(ws.some(w=>t.includes(norm(w)))) return f; return ""; }
 const DOW = ["Lun","Mar","Mer","Jeu","Ven","Sam","Dim"];
 const MONTHS = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
 const LS = {rdv:"classeur.rdv.v1", docs:"classeur.docs.v1", set:"classeur.set.v1"};
@@ -487,6 +521,7 @@ function analyzeText(text){
   if(om) r.org=om[0].replace(/\s+/g," ");
   else { const orgs=["CPAM","Assurance Maladie","CAF","URSSAF","Pôle emploi","France Travail","Mutuelle","CHBA","Centre Hospitalier","Clinique","Laboratoire","Impots","Impôts","Mairie","Préfecture","Banque","EDF","Engie"]; const f=orgs.find(o=>t.includes(norm(o))); if(f) r.org=f; }
   r.cat=guessCat(text);
+  r.folder=guessFolder(text);
   return r;
 }
 
@@ -614,7 +649,7 @@ function docRow(d){
     + (files.some(f=>f.text)?`<button class="btn icon small" title="Voir le texte lu dans le scan" onclick="showText('${d.id}')">🔍</button>`:"");
   return `<div class="row">
     <div class="body">
-      <div class="title">${esc(d.title||"Document")} ${catChip(d.cat)} ${badge}</div>
+      <div class="title">${esc(d.title||"Document")} ${catChip(d.cat)}${d.folder?` <span class="chip" style="background:var(--line);color:var(--muted)">📁 ${esc(d.folder)}</span>`:""} ${badge}</div>
       <div class="sub">${esc(meta)}${d.notes?(meta?" · ":"")+esc(d.notes):""}${files.length?" · 📎 "+esc(files.map(f=>f.name).join(", ")):""}</div>
       ${tags?`<div style="margin-top:4px;display:flex;gap:4px;flex-wrap:wrap">${tags}</div>`:""}
     </div>
@@ -627,23 +662,37 @@ function docRow(d){
 }
 /* Texte normalisé (sans accents) pour une recherche tolérante */
 function norm(s){ return (s==null?"":String(s)).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,""); }
-function docHaystack(d){ return norm([d.title,d.type,d.org,d.ref,d.notes,(d.files||[]).map(f=>f.name+" "+(f.text||"")).join(" "),CATS[d.cat]?.label,(d.tags||[]).join(" "),d.date,d.expiry].join(" ")); }
+function docHaystack(d){ return norm([d.title,d.folder,d.type,d.org,d.ref,d.notes,(d.files||[]).map(f=>f.name+" "+(f.text||"")).join(" "),CATS[d.cat]?.label,(d.tags||[]).join(" "),d.date,d.expiry].join(" ")); }
 function rdvHaystack(r){ return norm([r.title,r.person,r.place,r.notes,CATS[r.cat]?.label,r.date].join(" ")); }
 function matches(hay,q){ return norm(q).split(/\s+/).filter(Boolean).every(w=>hay.includes(w)); }
 function docsSorted(list, mode){
   const t=d=>d.date?new Date(d.date).getTime():0;
   if(mode==="expiry") return list.sort((a,b)=>(a.expiry?new Date(a.expiry).getTime():Infinity)-(b.expiry?new Date(b.expiry).getTime():Infinity));
   if(mode==="name") return list.sort((a,b)=>a.title.localeCompare(b.title,"fr"));
+  if(mode==="folder") return list.sort((a,b)=>(CATS[a.cat]?.label||"").localeCompare(CATS[b.cat]?.label||"","fr") || (a.folder||"zzz").localeCompare(b.folder||"zzz","fr") || (t(b)-t(a)));
   return list.sort((a,b)=>(t(b)-t(a)) || (b.createdAt||0)-(a.createdAt||0));
 }
 function renderDocs(){
   const q=document.getElementById("docSearch").value||"";
   const type=document.getElementById("docType").value, mode=document.getElementById("docSort").value;
+  const folderSel=document.getElementById("docFolder"); const folder=folderSel.value;
+  // liste des dossiers en usage (pour la catégorie filtrée)
+  const inUse=[...new Set(DOCS.filter(d=>docFilter==="all"||d.cat===docFilter).map(d=>d.folder).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"fr"));
+  folderSel.innerHTML=`<option value="all">Tous les dossiers</option>`+inUse.map(f=>`<option ${f===folder?"selected":""}>${esc(f)}</option>`).join("");
+  if(folder!=="all" && !inUse.includes(folder)) folderSel.value="all";
   let list=docsSorted([...DOCS], mode);
   if(docFilter!=="all") list=list.filter(d=>d.cat===docFilter);
+  if(folderSel.value!=="all") list=list.filter(d=>d.folder===folderSel.value);
   if(type!=="all") list=list.filter(d=>d.type===type);
   if(q) list=list.filter(d=>matches(docHaystack(d),q));
   const box=document.getElementById("docList");
+  if(mode==="folder" && list.length){
+    let html="", last=null;
+    list.forEach(d=>{ const key=(CATS[d.cat]?.emo||"")+" "+(CATS[d.cat]?.label||"")+" › "+(d.folder||"Sans dossier");
+      if(key!==last){ html+=`<div style="padding:12px 16px 6px;font-weight:800;font-size:13px;color:var(--muted);border-top:1px solid var(--line);background:var(--panel-2)">${esc(key)}</div>`; last=key; }
+      html+=docRow(d); });
+    box.innerHTML=html; return;
+  }
   box.innerHTML = list.length ? list.map(docRow).join("")
     : (DOCS.length ? emptyBox("🔍","Aucun résultat","Essayez un autre mot : nom du praticien, type de document, mot-clé…")
        : emptyBox("📄","Aucun papier classé","Ajoutez vos documents : comptes rendus, ordonnances, carte d'identité, mutuelle, factures…"));
@@ -735,7 +784,7 @@ function delRdv(id){
 
 /* ---------- Modale Document ---------- */
 function openDoc(id){
-  const d = id ? DOCS.find(x=>x.id===id) : {id:null,title:"",cat:"admin",type:"",org:"",tags:[],ref:"",date:new Date().toISOString().slice(0,10),expiry:"",notes:"",files:[]};
+  const d = id ? DOCS.find(x=>x.id===id) : {id:null,title:"",cat:"admin",type:"",org:"",folder:"",tags:[],ref:"",date:new Date().toISOString().slice(0,10),expiry:"",notes:"",files:[]};
   const catOpts=Object.entries(CATS).map(([k,c])=>`<div class="opt ${d.cat===k?"sel":""}" data-cat="${k}">${c.emo} ${c.label}</div>`).join("");
   const typeOpts=`<option value="">— Choisir —</option>`+DOCTYPES.map(t=>`<option ${d.type===t?"selected":""}>${esc(t)}</option>`).join("");
   const modal=el(`<div class="overlay"><div class="modal">
@@ -757,6 +806,9 @@ function openDoc(id){
         <div class="hint" style="margin-top:6px">Avec IJ Scan Utility : numérisez en PDF (ou JPG), puis joignez le fichier ici. Les photos sont compressées automatiquement.</div>
       </div>
       <div class="field"><label>Catégorie</label><div class="catpick" id="f_cat">${catOpts}</div></div>
+      <div class="field"><label>Dossier <span class="hint">(intercalaire du classeur — choisissez ou tapez le vôtre)</span></label>
+        <input type="text" id="f_folder" list="folderList" placeholder="Ex : Impôts, Mutuelle & Sécu, Logement…" value="${esc(d.folder||"")}"><datalist id="folderList"></datalist>
+      </div>
       <div class="two">
         <div class="field"><label>Type de document</label><select id="f_type">${typeOpts}</select></div>
         <div class="field"><label>Praticien / Organisme <span class="hint">(optionnel)</span></label><input type="text" id="f_org" placeholder="Ex : Dr Martin, CPAM, Mutuelle" value="${esc(d.org||"")}"></div>
@@ -806,7 +858,8 @@ function openDoc(id){
     if(a.type && !q("#f_type").value) q("#f_type").value=a.type;
     if(a.date && q("#f_date").value===new Date().toISOString().slice(0,10)) q("#f_date").value=a.date;
     if(a.org && !q("#f_org").value) q("#f_org").value=a.org;
-    if(!d.id && a.cat && a.cat!=="autre"){ cat=a.cat; modal.querySelectorAll("#f_cat .opt").forEach(x=>x.classList.toggle("sel",x.dataset.cat===cat)); }
+    if(!d.id && a.cat && a.cat!=="autre"){ cat=a.cat; modal.querySelectorAll("#f_cat .opt").forEach(x=>x.classList.toggle("sel",x.dataset.cat===cat)); refreshFolders(); }
+    if(a.folder && !q("#f_folder").value.trim()) q("#f_folder").value=a.folder;
     if(!q("#f_title").value.trim()){ const t=[q("#f_type").value||"Document", q("#f_org").value].filter(Boolean).join(" — "); q("#f_title").value=t; }
   }
   async function handleFiles(list){
@@ -841,7 +894,10 @@ function openDoc(id){
       else status("⚠️ <b>IJ Scan Utility est introuvable.</b><br><span class='small'>Indiquez son emplacement dans <b>Réglages → Programme de numérisation</b>, ou numérisez avec votre logiciel : tout fichier qui apparaît dans <code>"+esc(r.dir)+"</code> sera joint ici.</span>","err");
     };
   }
-  modal.querySelectorAll("#f_cat .opt").forEach(o=>o.onclick=()=>{cat=o.dataset.cat; modal.querySelectorAll("#f_cat .opt").forEach(x=>x.classList.toggle("sel",x===o));});
+  const folderList=modal.querySelector("#folderList");
+  const refreshFolders=()=>{ const used=DOCS.filter(x=>x.cat===cat).map(x=>x.folder).filter(Boolean); const all=[...new Set([...(FOLDERS[cat]||[]),...used])]; folderList.innerHTML=all.map(f=>`<option value="${esc(f)}">`).join(""); };
+  refreshFolders();
+  modal.querySelectorAll("#f_cat .opt").forEach(o=>o.onclick=()=>{cat=o.dataset.cat; modal.querySelectorAll("#f_cat .opt").forEach(x=>x.classList.toggle("sel",x===o)); refreshFolders();});
   const fileInput=modal.querySelector("#f_file"), camInput=modal.querySelector("#f_cam"), drop=modal.querySelector("#f_drop");
   modal.querySelector("#f_scanbtn").onclick=()=>fileInput.click();
   modal.querySelector("#f_cambtn").onclick=()=>camInput.click();
@@ -855,7 +911,7 @@ function openDoc(id){
     const t=modal.querySelector("#f_title").value.trim();
     if(!t){ toast("Indiquez le nom du document."); return; }
     const tags=modal.querySelector("#f_tags").value.split(",").map(s=>s.trim()).filter(Boolean);
-    const obj={id:d.id||uid(), title:t, cat, type:modal.querySelector("#f_type").value, org:modal.querySelector("#f_org").value.trim(), tags,
+    const obj={id:d.id||uid(), title:t, cat, type:modal.querySelector("#f_type").value, org:modal.querySelector("#f_org").value.trim(), folder:modal.querySelector("#f_folder").value.trim(), tags,
       ref:modal.querySelector("#f_ref").value.trim(),
       date:modal.querySelector("#f_date").value, expiry:modal.querySelector("#f_expiry").value,
       notes:modal.querySelector("#f_notes").value.trim(), files, createdAt:d.createdAt||Date.now()};
@@ -1189,6 +1245,7 @@ function renderAll(){ renderDash(); renderRdv(); renderDocs(); renderCal(); rend
   const typeSel=document.getElementById("docType");
   DOCTYPES.forEach(t=>typeSel.appendChild(el(`<option>${esc(t)}</option>`)));
   typeSel.onchange=renderDocs;
+  document.getElementById("docFolder").onchange=renderDocs;
   document.getElementById("docSort").onchange=renderDocs;
   document.getElementById("rdvFilters").querySelectorAll(".filter").forEach(b=>b.onclick=()=>{
     rdvFilter=b.dataset.cat; document.querySelectorAll("#rdvFilters .filter").forEach(x=>x.classList.toggle("active",x===b)); renderRdv();

@@ -13,7 +13,8 @@ pour l'avoir aussi sur votre téléphone. Ajoutez la page à l'écran d'accueil 
 - **Tableau de bord** : recherche globale, prochains rendez-vous, échéances de papiers.
 - **Rendez-vous** : titre, catégorie (médical / administratif / finances / autre), date, heure, praticien, lieu, notes.
 - **Calendrier** mensuel : cliquez sur un jour pour y ajouter un rendez-vous.
-- **Papiers** : nom, catégorie, **type** (compte rendu, ordonnance, résultat d'analyse, facture, attestation…),
+- **Papiers** : nom, catégorie, **dossier** (intercalaire : Impôts, Logement, Mutuelle & Sécu, Ordonnances… proposés
+  par catégorie, libres à compléter ; deviné d'après le scan ; vue *Par dossier* et filtre), **type** (compte rendu, ordonnance, résultat d'analyse, facture, attestation…),
   **praticien / organisme**, **mots-clés**, référence, date, **échéance** (alerte 45 jours avant expiration),
   notes et **pièces jointes** (scans PDF, photos — plusieurs par papier, conservées sur l'appareil).
 - **Retrouver un document** : la recherche ignore les accents et accepte plusieurs mots
