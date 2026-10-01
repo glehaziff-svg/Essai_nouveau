@@ -52,7 +52,9 @@ Application Windows complète, sans navigateur. En plus de tout ce qui précède
   catégorie, titre) et le texte est consultable / copiable (bouton 📝 ou 🔍). Désactivable dans *Réglages*.
 - **🔄 Synchronisation Google Agenda** : collez une fois l'*adresse secrète au format iCal* de votre agenda
   (*Réglages → Synchronisation Google Agenda*) ; l'app récupère vos rendez-vous au démarrage puis toutes les heures,
-  sans doublons. Lecture seule : rien n'est modifié dans Google. Pour obtenir l'adresse : calendar.google.com →
+  sans doublons ; les rendez-vous **modifiés, déplacés ou supprimés** dans Google sont répercutés (uniquement ceux
+  venus de Google, badge « G » ; votre catégorie et vos notes sont conservées ; l'historique de plus de 30 jours n'est
+  jamais effacé). Lecture seule : rien n'est modifié dans Google. Pour obtenir l'adresse : calendar.google.com →
   ⚙️ Paramètres → votre agenda dans la colonne de gauche → tout en bas, *Adresse secrète au format iCal* → copier.
 - Sauvegardes et exports `.ics` via une vraie boîte de dialogue « Enregistrer sous ».
 

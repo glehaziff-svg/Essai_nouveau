@@ -1103,8 +1103,14 @@ function importICS(text, opts){
   let includePast=opts.includePast;
   if(includePast==null && hasOld) includePast=confirm("Ce fichier contient des rendez-vous passés.\n\nOK = importer aussi l'historique (utile pour le suivi médical)\nAnnuler = seulement les rendez-vous récents et à venir");
   if(includePast) since.setFullYear(1970);
-  const existing=new Set(RDV.map(r=>r.gKey).filter(Boolean));
-  let added=0, dup=0, skipped=0;
+  const byKey=new Map(RDV.filter(r=>r.gKey).map(r=>[r.gKey,r]));
+  const feedKeys=new Set();
+  let added=0, dup=0, skipped=0, updated=0, removed=0;
+  const sameFields=(r,f)=>r.title===f.title && r.date===f.date && (r.time||"")===(f.time||"") && (r.place||"")===(f.place||"");
+  const applyUpdate=(r,f)=>{ // garde la catégorie, le contact et les notes modifiées par l'utilisateur
+    r.title=f.title; r.date=f.date; r.time=f.time; r.place=f.place;
+    if(!r.notes || r.notes===r.gNotes) r.notes=f.notes;
+    r.gNotes=f.notes; r.gKey=f.key; updated++; };
   events.forEach(ev=>{
     if(!ev.DTSTART || !ev.SUMMARY) { skipped++; return; }
     if(ev.STATUS && ev.STATUS.val==="CANCELLED"){ skipped++; return; }
@@ -1118,17 +1124,30 @@ function importICS(text, opts){
     start.time=timeFromTitle(title, start);
     const occ = ev.RRULE ? expandRecurrence(start, ev.RRULE.val, exdates) : [start];
     occ.forEach(o=>{
+      const key=evUid+"|"+o.date; feedKeys.add(key);
       if(new Date(o.date+"T"+(o.time||"00:00"))<since){ skipped++; return; }
-      const key=evUid+"|"+o.date;
-      if(existing.has(key)){ dup++; return; }
-      RDV.push({id:uid(), title, cat, date:o.date, time:o.time, person:"", place, notes, gKey:key, source:"google"});
-      existing.add(key); added++;
+      const f={key, title, date:o.date, time:o.time, place, notes};
+      const r=byKey.get(key);
+      if(r){ if(sameFields(r,f)) dup++; else applyUpdate(r,f); return; }
+      if(!ev.RRULE){ // déplacé à une autre date ? (même UID, ancienne date absente du flux)
+        const moved=RDV.find(x=>x.source==="google" && x.gKey && x.gKey.startsWith(evUid+"|") && x.gKey!==key && !feedKeys.has(x.gKey));
+        if(moved){ byKey.delete(moved.gKey); applyUpdate(moved,f); byKey.set(key,moved); return; }
+      }
+      const n={id:uid(), title, cat, date:o.date, time:o.time, person:"", place, notes, gNotes:notes, gKey:key, source:"google"};
+      RDV.push(n); byKey.set(key,n); added++;
     });
   });
+  if(opts.sync){ // supprimés dans Google → retirés ici (rendez-vous récents/à venir seulement, jamais l'historique)
+    const cutoff=new Date(); cutoff.setDate(cutoff.getDate()-30); cutoff.setHours(0,0,0,0);
+    const before=RDV.length;
+    RDV=RDV.filter(r=>!(r.source==="google" && r.gKey && !feedKeys.has(r.gKey) && rdvDate(r)>=cutoff));
+    removed=before-RDV.length;
+  }
   persist(); renderAll();
-  if(!opts.quiet || added) toast(added+" rendez-vous importé(s)"+(dup?", "+dup+" déjà présent(s)":"")+(skipped?", "+skipped+" ignoré(s) (passés/annulés)":"")+".");
+  const changed=added+updated+removed;
+  if(!opts.quiet || changed) toast(added+" nouveau(x)"+(updated?", "+updated+" modifié(s)":"")+(removed?", "+removed+" supprimé(s)":"")+(dup?", "+dup+" inchangé(s)":"")+(skipped&&!opts.quiet?", "+skipped+" ignoré(s) (passés/annulés)":"")+".");
   if(added && !opts.quiet) switchTab("rdv");
-  return {added,dup,skipped};
+  return {added,dup,skipped,updated,removed};
 }
 /* ---------- Synchronisation Google Agenda (version bureau) ---------- */
 let gcalSyncing=false;
@@ -1140,9 +1159,9 @@ async function gcalSync(auto){
     const r=await classeur.gcalFetch();
     if(!r.ok){ if(!auto) toast("Google Agenda : "+r.error); st.textContent="Dernière tentative : échec — "+r.error; return; }
     const first=!SETTINGS.gcalSyncedOnce;
-    const res=importICS(r.text, {includePast: first ? null : false, quiet: auto});
+    const res=importICS(r.text, {includePast: first ? null : false, quiet: auto, sync: true});
     SETTINGS.gcalSyncedOnce=true; SETTINGS.gcalLast=Date.now(); save(LS.set,SETTINGS);
-    st.textContent="Dernière synchronisation : "+new Date().toLocaleString("fr-FR",{dateStyle:"short",timeStyle:"short"})+" ("+res.added+" nouveau(x)).";
+    st.textContent="Dernière synchronisation : "+new Date().toLocaleString("fr-FR",{dateStyle:"short",timeStyle:"short"})+" ("+res.added+" nouveau(x), "+(res.updated||0)+" modifié(s), "+(res.removed||0)+" supprimé(s)).";
   } finally { gcalSyncing=false; }
 }
 document.getElementById("icsFile").onchange=function(){
