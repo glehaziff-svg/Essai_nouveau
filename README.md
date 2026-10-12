@@ -22,6 +22,67 @@ Tout le contenu (textes, photos, coordonnées) est stocké dans `content/site.js
 4. Modifier les textes, remplacer les photos (glisser-déposer), ajouter des services ou des avis
 5. Cliquer sur **« Publier »** — le site se met à jour automatiquement en 1 à 2 minutes
 
+## Exemples de modifications
+
+Toutes ces modifications se font depuis `/admin/` → **« Textes et photos du site »**, puis **« Publier »**.
+
+### Exemple 1 — Changer le numéro de téléphone
+
+Ouvrir **Informations générales** → champ **Téléphone** → saisir par exemple `06 98 76 54 32`.
+Le numéro est mis à jour partout : en-tête, page d'accueil, section contact et bouton d'appel mobile (le lien « appeler » est généré automatiquement).
+
+### Exemple 2 — Remplacer la photo principale
+
+Ouvrir **Page d'accueil** → **Photo principale** → **« Choisir une autre image »** → glisser-déposer la photo (JPG ou PNG, idéalement en format paysage, moins de 1 Mo).
+La photo est enregistrée dans `images/uploads/`.
+
+### Exemple 3 — Ajouter un service
+
+Ouvrir **Services** → **« Ajouter Services »** en bas de la liste, puis remplir :
+
+| Champ | Exemple |
+|---|---|
+| Titre du service | `Débouchage de canalisation` |
+| Description | `Évier, douche ou WC bouché : débouchage rapide par furet ou hydrocurage, sans dégâts.` |
+| Photo | une photo du chantier |
+
+Pour changer l'ordre, faire glisser les services dans la liste. Pour en supprimer un, cliquer sur la croix à droite de son titre.
+
+### Exemple 4 — Ajouter un avis client
+
+Ouvrir **Avis clients** → **« Ajouter Avis clients »** :
+
+| Champ | Exemple |
+|---|---|
+| Nom du client | `Thomas R.` |
+| Avis | `Chauffe-eau remplacé le jour même. Très professionnel et ponctuel.` |
+| Note (1 à 5) | `5` |
+
+La note s'affiche automatiquement en étoiles (★★★★★).
+
+### Exemple 5 — Ajouter une réalisation à la galerie
+
+Ouvrir **Galerie de réalisations** → **Photos** → **« Ajouter Photos »**, choisir l'image et saisir une légende, par exemple `Remplacement de colonne d'eau — Paris 20e`.
+
+### Exemple 6 — Modifier les horaires
+
+Ouvrir **Informations générales** → **Horaires**, par exemple :
+`Lun - Ven : 8h00 - 18h00 · Sam : 9h00 - 12h00 · Urgences 24h/24`
+
+### À quoi ressemble le contenu (pour information)
+
+L'interface d'administration écrit dans `content/site.json`. Un service y ressemble à ceci :
+
+```json
+{
+  "titre": "Débouchage de canalisation",
+  "description": "Évier, douche ou WC bouché : débouchage rapide par furet ou hydrocurage, sans dégâts.",
+  "photo": "/images/uploads/debouchage.jpg"
+}
+```
+
+Il n'est jamais nécessaire de modifier ce fichier à la main.
+
 ## Mise en ligne (Netlify — gratuit)
 
 1. Créer un compte sur [netlify.com](https://www.netlify.com) et cliquer sur **« Add new site » → « Import an existing project »**, puis choisir ce dépôt GitHub (branche `main`).
