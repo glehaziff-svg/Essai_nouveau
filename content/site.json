@@ -1,73 +1,66 @@
 {
   "general": {
-    "nom_entreprise": "Dupont Plomberie",
-    "slogan": "Votre plombier de confiance, disponible 7j/7",
-    "telephone": "06 12 34 56 78",
-    "email": "contact@dupont-plomberie.fr",
-    "adresse": "12 rue des Artisans, 75011 Paris",
-    "zone_intervention": "Paris et petite couronne",
-    "horaires": "Lun - Sam : 8h00 - 19h00 · Urgences 24h/24"
+    "nom": "[À compléter : votre nom ou nom commercial]",
+    "metier": "Programmeur web et designer, spécialisé dans le secrétariat",
+    "telephone": "[À compléter : téléphone]",
+    "email": "[À compléter : email]",
+    "ville": "[À compléter : ville]",
+    "zone_intervention": "[À compléter : zone d'intervention (à distance, sur site, rayon…)]",
+    "horaires": "[À compléter : horaires]",
+    "linkedin": "",
+    "lien_rendez_vous": ""
   },
   "accueil": {
-    "titre": "Plombier à Paris — Dépannage rapide et travaux soignés",
-    "sous_titre": "Intervention en moins d'une heure pour les urgences. Devis gratuit, tarifs transparents, travail garanti.",
-    "photo_principale": "/images/hero.svg",
-    "bouton_texte": "Demander un devis gratuit"
-  },
-  "a_propos": {
-    "titre": "Qui sommes-nous ?",
-    "texte": "Artisan plombier depuis plus de 15 ans, nous intervenons rapidement pour tous vos besoins en plomberie : dépannage, installation, rénovation. Notre priorité : un travail propre, durable et au juste prix. Chaque intervention est garantie et fait l'objet d'un devis clair avant travaux.",
-    "photo": "/images/about.svg"
-  },
-  "services": [
-    {
-      "titre": "Dépannage d'urgence",
-      "description": "Fuite d'eau, canalisation bouchée, chauffe-eau en panne : nous intervenons 7j/7 en moins d'une heure.",
-      "photo": "/images/service-urgence.svg"
-    },
-    {
-      "titre": "Installation sanitaire",
-      "description": "Pose de chauffe-eau, robinetterie, WC, douche à l'italienne. Matériel de qualité et finitions soignées.",
-      "photo": "/images/service-installation.svg"
-    },
-    {
-      "titre": "Rénovation salle de bain",
-      "description": "De la conception à la réalisation, nous rénovons votre salle de bain clé en main, dans le respect de votre budget.",
-      "photo": "/images/service-renovation.svg"
-    },
-    {
-      "titre": "Recherche de fuite",
-      "description": "Détection non destructive par caméra et gaz traceur. Nous trouvons la fuite sans casser vos murs.",
-      "photo": "/images/service-fuite.svg"
-    }
-  ],
-  "avis": [
-    {
-      "nom": "Marie L.",
-      "texte": "Intervention très rapide pour une fuite sous l'évier. Travail propre et tarif annoncé respecté. Je recommande !",
-      "note": 5
-    },
-    {
-      "nom": "Karim B.",
-      "texte": "Rénovation complète de notre salle de bain. Délais tenus, résultat impeccable. Un vrai professionnel.",
-      "note": 5
-    },
-    {
-      "nom": "Sophie D.",
-      "texte": "Plombier honnête et de bon conseil. Il m'a évité des travaux inutiles. Merci !",
-      "note": 5
-    }
-  ],
-  "galerie": {
-    "titre": "Nos réalisations",
-    "photos": [
-      { "image": "/images/realisation-1.svg", "legende": "Salle de bain moderne — Paris 11e" },
-      { "image": "/images/realisation-2.svg", "legende": "Installation chauffe-eau — Montreuil" },
-      { "image": "/images/realisation-3.svg", "legende": "Douche à l'italienne — Vincennes" }
+    "titre": "Allégez votre charge administrative",
+    "sous_titre": "Confiez-moi vos tâches administratives et consacrez votre temps à votre cœur de métier.",
+    "bouton_texte": "Parlons de votre besoin",
+    "constats_titre": "Vous vous reconnaissez ?",
+    "constats": [
+      { "texte": "L'administratif empiète sur le temps que vous voudriez consacrer à vos clients." },
+      { "texte": "Les papiers, relances et classements s'accumulent et vous les repoussez sans cesse." },
+      { "texte": "Vous avez besoin d'aide, sans pour autant vouloir recruter." }
+    ],
+    "etapes_titre": "Comment ça se passe",
+    "etapes": [
+      { "titre": "On échange", "texte": "Vous me présentez votre activité et les tâches que vous souhaitez déléguer." },
+      { "titre": "Je vous propose une solution", "texte": "[À compléter : comment vous formalisez votre proposition (devis, forfait…)]" },
+      { "titre": "Vous vous libérez du temps", "texte": "Je prends en charge les tâches convenues et vous vous concentrez sur l'essentiel." }
     ]
   },
+  "a_propos": {
+    "titre": "Qui suis-je ?",
+    "photo": "/images/portrait.svg",
+    "accroche": "[À compléter : une phrase qui vous résume]",
+    "texte": "[À compléter : votre parcours, votre expérience, ce qui vous a amené au secrétariat indépendant.]",
+    "atouts": [
+      { "titre": "Double compétence", "texte": "Programmeur web et designer : [À compléter : ce que cela apporte concrètement à vos clients]" },
+      { "titre": "[À compléter : atout 2]", "texte": "[À compléter]" },
+      { "titre": "[À compléter : atout 3]", "texte": "[À compléter]" }
+    ]
+  },
+  "services": {
+    "titre": "Mes services",
+    "intro": "[À compléter : une phrase d'introduction à vos services]",
+    "liste": [
+      { "titre": "[À compléter : service 1]", "description": "[À compléter : description du service]" },
+      { "titre": "[À compléter : service 2]", "description": "[À compléter : description du service]" },
+      { "titre": "[À compléter : service 3]", "description": "[À compléter : description du service]" },
+      { "titre": "[À compléter : service 4]", "description": "[À compléter : description du service]" }
+    ],
+    "modalites": "[À compléter : à distance / sur site, ponctuel / régulier, forfait / à l'heure…]",
+    "afficher_tarifs": false,
+    "tarifs": "[À compléter : vos tarifs]"
+  },
   "contact": {
-    "titre": "Contactez-nous",
-    "texte": "Un problème de plomberie ? Une question ? Appelez-nous ou envoyez-nous un message, nous vous répondons rapidement."
+    "titre": "Me contacter",
+    "texte": "Décrivez-moi votre besoin, je vous réponds rapidement."
+  },
+  "livre_dor": {
+    "titre": "Livre d'or",
+    "intro": "Vous avez travaillé avec moi ? Votre avis compte et aide d'autres professionnels à me faire confiance.",
+    "messages": []
+  },
+  "mentions_legales": {
+    "texte": "[À compléter : nom, statut juridique, SIRET, adresse, email, directeur de la publication.]\n\nHébergement : Netlify, Inc. — [À compléter : adresse de l'hébergeur, à reprendre sur netlify.com].\n\nDonnées personnelles : les informations transmises via les formulaires servent uniquement à répondre à votre demande et ne sont jamais cédées à des tiers. Vous pouvez demander leur suppression à tout moment par email."
   }
 }

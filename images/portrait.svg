@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 480" role="img" aria-label="Emplacement photo">
+  <rect width="400" height="480" fill="#e8e2d8"/>
+  <circle cx="200" cy="190" r="72" fill="#cfc6b8"/>
+  <path d="M70 480c10-96 64-150 130-150s120 54 130 150z" fill="#cfc6b8"/>
+  <text x="200" y="440" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" fill="#8a7f70">Votre photo ici</text>
+</svg>

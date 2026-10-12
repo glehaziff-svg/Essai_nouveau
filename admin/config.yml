@@ -1,5 +1,5 @@
 # Configuration de l'interface d'administration (Decap CMS)
-# Le client se connecte sur /admin pour modifier textes et photos.
+# Se connecter sur /admin pour modifier textes et photos.
 
 backend:
   name: git-gateway
@@ -22,13 +22,15 @@ collections:
             name: "general"
             widget: "object"
             fields:
-              - { label: "Nom de l'entreprise", name: "nom_entreprise", widget: "string" }
-              - { label: "Slogan", name: "slogan", widget: "string" }
+              - { label: "Nom ou nom commercial", name: "nom", widget: "string" }
+              - { label: "Métier (sous le nom)", name: "metier", widget: "string" }
               - { label: "Téléphone", name: "telephone", widget: "string" }
               - { label: "Email", name: "email", widget: "string" }
-              - { label: "Adresse", name: "adresse", widget: "string" }
+              - { label: "Ville", name: "ville", widget: "string" }
               - { label: "Zone d'intervention", name: "zone_intervention", widget: "string" }
               - { label: "Horaires", name: "horaires", widget: "string" }
+              - { label: "Lien LinkedIn (facultatif)", name: "linkedin", widget: "string", required: false }
+              - { label: "Lien de prise de rendez-vous (facultatif)", name: "lien_rendez_vous", widget: "string", required: false }
 
           - label: "Page d'accueil"
             name: "accueil"
@@ -36,51 +38,80 @@ collections:
             fields:
               - { label: "Titre principal", name: "titre", widget: "string" }
               - { label: "Sous-titre", name: "sous_titre", widget: "text" }
-              - { label: "Photo principale", name: "photo_principale", widget: "image" }
               - { label: "Texte du bouton", name: "bouton_texte", widget: "string" }
+              - { label: "Titre « constats »", name: "constats_titre", widget: "string" }
+              - label: "Constats (problèmes de vos clients)"
+                name: "constats"
+                widget: "list"
+                summary: "{{fields.texte}}"
+                fields:
+                  - { label: "Texte", name: "texte", widget: "text" }
+              - { label: "Titre « méthode »", name: "etapes_titre", widget: "string" }
+              - label: "Étapes de la méthode"
+                name: "etapes"
+                widget: "list"
+                summary: "{{fields.titre}}"
+                fields:
+                  - { label: "Titre", name: "titre", widget: "string" }
+                  - { label: "Texte", name: "texte", widget: "text" }
 
-          - label: "À propos"
+          - label: "Qui suis-je"
             name: "a_propos"
             widget: "object"
             fields:
               - { label: "Titre", name: "titre", widget: "string" }
-              - { label: "Texte de présentation", name: "texte", widget: "text" }
               - { label: "Photo", name: "photo", widget: "image" }
+              - { label: "Phrase d'accroche", name: "accroche", widget: "text" }
+              - { label: "Parcours", name: "texte", widget: "text" }
+              - label: "Atouts"
+                name: "atouts"
+                widget: "list"
+                summary: "{{fields.titre}}"
+                fields:
+                  - { label: "Titre", name: "titre", widget: "string" }
+                  - { label: "Texte", name: "texte", widget: "text" }
 
-          - label: "Services"
+          - label: "Mes services"
             name: "services"
-            widget: "list"
-            summary: "{{fields.titre}}"
-            fields:
-              - { label: "Titre du service", name: "titre", widget: "string" }
-              - { label: "Description", name: "description", widget: "text" }
-              - { label: "Photo", name: "photo", widget: "image" }
-
-          - label: "Avis clients"
-            name: "avis"
-            widget: "list"
-            summary: "{{fields.nom}}"
-            fields:
-              - { label: "Nom du client", name: "nom", widget: "string" }
-              - { label: "Avis", name: "texte", widget: "text" }
-              - { label: "Note (1 à 5)", name: "note", widget: "number", min: 1, max: 5, value_type: "int", default: 5 }
-
-          - label: "Galerie de réalisations"
-            name: "galerie"
             widget: "object"
             fields:
-              - { label: "Titre de la section", name: "titre", widget: "string" }
-              - label: "Photos"
-                name: "photos"
+              - { label: "Titre de la page", name: "titre", widget: "string" }
+              - { label: "Introduction", name: "intro", widget: "text" }
+              - label: "Services"
+                name: "liste"
                 widget: "list"
-                summary: "{{fields.legende}}"
+                summary: "{{fields.titre}}"
                 fields:
-                  - { label: "Photo", name: "image", widget: "image" }
-                  - { label: "Légende", name: "legende", widget: "string" }
+                  - { label: "Nom du service", name: "titre", widget: "string" }
+                  - { label: "Description", name: "description", widget: "text" }
+              - { label: "Modalités (comment je travaille)", name: "modalites", widget: "text" }
+              - { label: "Afficher les tarifs", name: "afficher_tarifs", widget: "boolean", default: false }
+              - { label: "Tarifs", name: "tarifs", widget: "text" }
 
-          - label: "Section contact"
+          - label: "Page contact"
             name: "contact"
             widget: "object"
             fields:
               - { label: "Titre", name: "titre", widget: "string" }
               - { label: "Texte d'introduction", name: "texte", widget: "text" }
+
+          - label: "Livre d'or"
+            name: "livre_dor"
+            widget: "object"
+            fields:
+              - { label: "Titre", name: "titre", widget: "string" }
+              - { label: "Introduction", name: "intro", widget: "text" }
+              - label: "Messages publiés"
+                name: "messages"
+                widget: "list"
+                summary: "{{fields.nom}}"
+                fields:
+                  - { label: "Nom", name: "nom", widget: "string" }
+                  - { label: "Entreprise ou activité", name: "entreprise", widget: "string", required: false }
+                  - { label: "Message", name: "texte", widget: "text" }
+
+          - label: "Mentions légales"
+            name: "mentions_legales"
+            widget: "object"
+            fields:
+              - { label: "Texte", name: "texte", widget: "text" }

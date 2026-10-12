@@ -1,114 +1,72 @@
-# Site vitrine — Plombier
+# Site vitrine — Secrétariat indépendant
 
-Site vitrine moderne pour un artisan plombier, avec une **interface d'administration** permettant au client de modifier lui-même les textes et les photos, sans toucher au code.
+Site de notoriété pour un programmeur web et designer spécialisé dans le secrétariat.
+Objectif : donner envie aux professionnels de confier leur charge administrative.
 
-## Contenu du site
+## Pages
 
-- **Accueil** : titre accrocheur, photo principale, boutons d'appel et de devis
-- **Services** : liste de services avec photo et description (ajout/suppression libre)
-- **À propos** : présentation de l'entreprise avec photo
-- **Réalisations** : galerie de photos avec légendes
-- **Avis clients** : témoignages avec notes en étoiles
-- **Contact** : coordonnées + formulaire de contact (fonctionne automatiquement sur Netlify)
-- Design responsive (mobile / tablette / ordinateur), bouton d'appel flottant sur mobile
+| Page | Fichier | Contenu |
+|---|---|---|
+| Accueil | `index.html` | Accroche, constats (« Vous vous reconnaissez ? »), aperçu des services, méthode en 3 étapes, extraits du livre d'or (affichés seulement s'il y a des messages), appel à l'action |
+| Qui suis-je | `qui-suis-je.html` | Photo, accroche, parcours, atouts |
+| Mes services | `services.html` | Liste des services, modalités de travail, tarifs (affichables ou non) |
+| Me contacter | `contact.html` | Coordonnées, liens facultatifs (LinkedIn, prise de rendez-vous), formulaire |
+| Livre d'or | `livre-dor.html` | Messages publiés + formulaire pour en laisser un |
+| Mentions légales | `mentions-legales.html` | Obligatoires pour un site professionnel |
+| Merci | `merci.html` | Page affichée après l'envoi d'un formulaire |
 
-## Comment le client modifie le site
+## Contenu à compléter
 
-Tout le contenu (textes, photos, coordonnées) est stocké dans `content/site.json`. Le client le modifie via l'interface d'administration **Decap CMS** :
+Aucune information personnelle n'a été inventée. Tant qu'un texte n'est pas fourni, il apparaît sur le site
+sous la forme **« [À compléter : …] »**, surligné en jaune pour être repéré d'un coup d'œil.
+Il suffit de remplacer ces textes depuis l'administration (voir ci-dessous).
 
-1. Aller sur `https://votre-site.netlify.app/admin/`
-2. Se connecter avec son email
-3. Cliquer sur **« Textes et photos du site »**
-4. Modifier les textes, remplacer les photos (glisser-déposer), ajouter des services ou des avis
-5. Cliquer sur **« Publier »** — le site se met à jour automatiquement en 1 à 2 minutes
+À fournir :
+- nom ou nom commercial, téléphone, email, ville, zone d'intervention, horaires ;
+- photo, phrase d'accroche, parcours et atouts (page « Qui suis-je ») ;
+- services réellement proposés, modalités de travail, tarifs éventuels ;
+- mentions légales (statut, SIRET, adresse, adresse de l'hébergeur) ;
+- liens LinkedIn et prise de rendez-vous si vous en avez (les boutons n'apparaissent que s'ils sont renseignés).
 
-## Exemples de modifications
+Les textes génériques déjà présents (titre d'accueil, constats, étapes de la méthode) sont modifiables eux aussi.
 
-Toutes ces modifications se font depuis `/admin/` → **« Textes et photos du site »**, puis **« Publier »**.
+## Livre d'or : fonctionnement
 
-### Exemple 1 — Changer le numéro de téléphone
+1. Un visiteur laisse un message via le formulaire de la page Livre d'or (avec son accord de publication).
+2. Le message arrive dans l'onglet **Forms** de Netlify (formulaire `livre-dor`) — rien n'est publié automatiquement.
+3. Pour le publier : `/admin/` → **Livre d'or** → **Messages publiés** → ajouter le nom, l'activité et le message → **Publier**.
 
-Ouvrir **Informations générales** → champ **Téléphone** → saisir par exemple `06 98 76 54 32`.
-Le numéro est mis à jour partout : en-tête, page d'accueil, section contact et bouton d'appel mobile (le lien « appeler » est généré automatiquement).
+Les demandes de contact arrivent de la même façon dans le formulaire `contact`. Une notification par email peut être activée dans Netlify (**Forms → Form notifications**).
 
-### Exemple 2 — Remplacer la photo principale
+## Modifier le site
 
-Ouvrir **Page d'accueil** → **Photo principale** → **« Choisir une autre image »** → glisser-déposer la photo (JPG ou PNG, idéalement en format paysage, moins de 1 Mo).
-La photo est enregistrée dans `images/uploads/`.
+Tout le contenu est stocké dans `content/site.json` et se modifie via l'interface **Decap CMS** :
 
-### Exemple 3 — Ajouter un service
-
-Ouvrir **Services** → **« Ajouter Services »** en bas de la liste, puis remplir :
-
-| Champ | Exemple |
-|---|---|
-| Titre du service | `Débouchage de canalisation` |
-| Description | `Évier, douche ou WC bouché : débouchage rapide par furet ou hydrocurage, sans dégâts.` |
-| Photo | une photo du chantier |
-
-Pour changer l'ordre, faire glisser les services dans la liste. Pour en supprimer un, cliquer sur la croix à droite de son titre.
-
-### Exemple 4 — Ajouter un avis client
-
-Ouvrir **Avis clients** → **« Ajouter Avis clients »** :
-
-| Champ | Exemple |
-|---|---|
-| Nom du client | `Thomas R.` |
-| Avis | `Chauffe-eau remplacé le jour même. Très professionnel et ponctuel.` |
-| Note (1 à 5) | `5` |
-
-La note s'affiche automatiquement en étoiles (★★★★★).
-
-### Exemple 5 — Ajouter une réalisation à la galerie
-
-Ouvrir **Galerie de réalisations** → **Photos** → **« Ajouter Photos »**, choisir l'image et saisir une légende, par exemple `Remplacement de colonne d'eau — Paris 20e`.
-
-### Exemple 6 — Modifier les horaires
-
-Ouvrir **Informations générales** → **Horaires**, par exemple :
-`Lun - Ven : 8h00 - 18h00 · Sam : 9h00 - 12h00 · Urgences 24h/24`
-
-### À quoi ressemble le contenu (pour information)
-
-L'interface d'administration écrit dans `content/site.json`. Un service y ressemble à ceci :
-
-```json
-{
-  "titre": "Débouchage de canalisation",
-  "description": "Évier, douche ou WC bouché : débouchage rapide par furet ou hydrocurage, sans dégâts.",
-  "photo": "/images/uploads/debouchage.jpg"
-}
-```
-
-Il n'est jamais nécessaire de modifier ce fichier à la main.
+1. Aller sur `https://votre-site.netlify.app/admin/` et se connecter
+2. Ouvrir **« Textes et photos du site »**
+3. Modifier les textes, changer la photo, ajouter ou réordonner les services
+4. Cliquer sur **« Publier »** — le site se met à jour en 1 à 2 minutes
 
 ## Mise en ligne (Netlify — gratuit)
 
-1. Créer un compte sur [netlify.com](https://www.netlify.com) et cliquer sur **« Add new site » → « Import an existing project »**, puis choisir ce dépôt GitHub (branche `main`).
-   - Build command : *(laisser vide)* — Publish directory : `.`
-2. Activer l'administration :
-   - Dans le tableau de bord Netlify : **Site configuration → Identity → Enable Identity**
-   - Puis **Identity → Services → Git Gateway → Enable Git Gateway**
-   - Dans **Identity → Registration**, choisir **« Invite only »**
-3. Inviter le client : **Identity → Invite users** → saisir son email. Il reçoit un email, définit son mot de passe, et peut se connecter sur `/admin/`.
-4. (Optionnel) Relier un nom de domaine : **Domain management → Add a domain**.
+1. Sur [netlify.com](https://www.netlify.com) : **« Add new site » → « Import an existing project »**, choisir ce dépôt (branche `main`).
+   Build command : *(vide)* — Publish directory : `.`
+2. Activer l'administration : **Identity → Enable Identity**, puis **Identity → Services → Git Gateway → Enable**, et **Registration → Invite only**.
+3. **Identity → Invite users** : saisir votre email, puis définir votre mot de passe via le lien reçu.
+4. (Optionnel) **Domain management → Add a domain** pour relier votre nom de domaine.
 
-Le formulaire de contact utilise **Netlify Forms** : les messages arrivent dans l'onglet **Forms** du tableau de bord (une notification email peut y être configurée).
-
-## Structure du projet
+## Structure
 
 ```
-├── index.html          # Page unique du site
-├── css/style.css       # Styles
-├── js/main.js          # Injecte le contenu de site.json dans la page
-├── content/site.json   # ⭐ Tout le contenu modifiable (textes + chemins photos)
-├── images/             # Images par défaut (placeholders SVG à remplacer)
-│   └── uploads/        # Photos ajoutées par le client via l'admin
-├── admin/
-│   ├── index.html      # Interface d'administration (Decap CMS)
-│   └── config.yml      # Définition des champs modifiables
-└── netlify.toml        # Configuration Netlify
+├── index.html, qui-suis-je.html, services.html, contact.html,
+│   livre-dor.html, mentions-legales.html, merci.html
+├── css/style.css        # Styles (couleurs en haut du fichier)
+├── js/main.js           # En-tête, pied de page et injection du contenu
+├── content/site.json    # ⭐ Tout le contenu modifiable
+├── images/              # Illustration d'accueil, photo par défaut
+│   └── uploads/         # Photos ajoutées via l'admin
+├── admin/               # Interface d'administration (Decap CMS)
+└── netlify.toml
 ```
 
 ## Tester en local
@@ -117,5 +75,3 @@ Le formulaire de contact utilise **Netlify Forms** : les messages arrivent dans 
 npx serve .
 # puis ouvrir http://localhost:3000
 ```
-
-(L'interface `/admin` ne fonctionne qu'une fois le site déployé sur Netlify avec Identity activé.)

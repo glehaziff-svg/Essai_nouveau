@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Me contacter — {nom}</title>
+  <meta name="description" content="Contactez-moi pour alléger votre charge administrative.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%2324384f'/><path d='M30 52l14 14 26-30' stroke='%23c8734b' stroke-width='10' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>">
+</head>
+<body data-page="contact">
+  <header id="header"></header>
+
+  <main>
+    <section class="section">
+      <div class="container contact-inner">
+        <div>
+          <span class="eyebrow">Contact</span>
+          <h1 data-content="contact.titre"></h1>
+          <p class="lead" data-content="contact.texte"></p>
+          <ul class="contact-infos">
+            <li><span class="label">Téléphone</span><a href="#" data-link="telephone" data-content="general.telephone"></a></li>
+            <li><span class="label">Email</span><a href="#" data-link="email" data-content="general.email"></a></li>
+            <li><span class="label">Ville</span><span data-content="general.ville"></span></li>
+            <li><span class="label">Zone d'intervention</span><span data-content="general.zone_intervention"></span></li>
+            <li><span class="label">Horaires</span><span data-content="general.horaires"></span></li>
+          </ul>
+          <div class="hero-actions">
+            <a href="#" class="btn btn-outline hidden" data-link="rendez-vous" target="_blank" rel="noopener">Prendre rendez-vous</a>
+            <a href="#" class="btn btn-outline hidden" data-link="linkedin" target="_blank" rel="noopener">LinkedIn</a>
+          </div>
+        </div>
+
+        <form class="form" name="contact" method="POST" action="/merci.html" data-netlify="true" netlify-honeypot="bot-field">
+          <input type="hidden" name="form-name" value="contact">
+          <p class="hidden"><label>Ne pas remplir : <input name="bot-field"></label></p>
+          <label>Nom et prénom
+            <input type="text" name="nom" autocomplete="name" required>
+          </label>
+          <label><span>Entreprise ou activité <span class="optional">(facultatif)</span></span>
+            <input type="text" name="entreprise" autocomplete="organization">
+          </label>
+          <label>Email
+            <input type="email" name="email" autocomplete="email" required>
+          </label>
+          <label><span>Téléphone <span class="optional">(facultatif)</span></span>
+            <input type="tel" name="telephone" autocomplete="tel">
+          </label>
+          <label>Votre besoin
+            <textarea name="message" rows="5" required placeholder="Quelles tâches souhaitez-vous déléguer ?"></textarea>
+          </label>
+          <label class="consent">
+            <input type="checkbox" name="consentement" required>
+            J'accepte que mes informations soient utilisées pour répondre à ma demande.
+          </label>
+          <button type="submit" class="btn btn-primary">Envoyer ma demande</button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer id="footer"></footer>
+
+  <script src="/js/main.js"></script>
+</body>
+</html>

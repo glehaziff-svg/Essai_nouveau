@@ -3,126 +3,91 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Plombier — Dépannage & Installation</title>
-  <meta name="description" content="Plombier professionnel : dépannage d'urgence, installation sanitaire, rénovation de salle de bain. Devis gratuit.">
+  <title>Accueil — {nom}</title>
+  <meta name="description" content="Secrétariat indépendant : confiez vos tâches administratives et consacrez votre temps à votre métier.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/style.css">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔧</text></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%2324384f'/><path d='M30 52l14 14 26-30' stroke='%23c8734b' stroke-width='10' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>">
 </head>
-<body>
+<body data-page="accueil">
+  <header id="header"></header>
 
-  <header class="header">
-    <div class="container header-inner">
-      <a href="#" class="logo">🔧 <span data-content="general.nom_entreprise">Plomberie</span></a>
-      <nav class="nav" id="nav">
-        <a href="#services">Services</a>
-        <a href="#apropos">À propos</a>
-        <a href="#realisations">Réalisations</a>
-        <a href="#avis">Avis</a>
-        <a href="#contact">Contact</a>
-      </nav>
-      <a class="btn btn-phone" href="#" id="phone-link">📞 <span data-content="general.telephone"></span></a>
-      <button class="burger" id="burger" aria-label="Menu">☰</button>
-    </div>
-  </header>
-
-  <section class="hero">
-    <div class="container hero-inner">
-      <div class="hero-text">
-        <p class="badge" data-content="general.slogan"></p>
-        <h1 data-content="accueil.titre"></h1>
-        <p class="hero-sub" data-content="accueil.sous_titre"></p>
-        <div class="hero-actions">
-          <a href="#contact" class="btn btn-primary" data-content="accueil.bouton_texte"></a>
-          <a href="#" id="phone-link-hero" class="btn btn-outline">📞 <span data-content="general.telephone"></span></a>
+  <main>
+    <section class="hero">
+      <div class="container hero-inner">
+        <div class="hero-text">
+          <span class="eyebrow" data-content="general.metier"></span>
+          <h1 data-content="accueil.titre"></h1>
+          <p class="lead" data-content="accueil.sous_titre"></p>
+          <div class="hero-actions">
+            <a href="/contact.html" class="btn btn-primary" data-content="accueil.bouton_texte"></a>
+            <a href="/services.html" class="btn btn-outline">Voir mes services</a>
+          </div>
         </div>
-        <ul class="hero-points">
-          <li>✅ Devis gratuit</li>
-          <li>✅ Tarifs transparents</li>
-          <li>✅ Travail garanti</li>
-        </ul>
-      </div>
-      <div class="hero-image">
-        <img data-img="accueil.photo_principale" alt="Plombier au travail">
-      </div>
-    </div>
-  </section>
-
-  <section class="section" id="services">
-    <div class="container">
-      <h2 class="section-title">Nos services</h2>
-      <div class="cards" id="services-list"></div>
-    </div>
-  </section>
-
-  <section class="section section-alt" id="apropos">
-    <div class="container about-inner">
-      <div class="about-image">
-        <img data-img="a_propos.photo" alt="Notre équipe">
-      </div>
-      <div class="about-text">
-        <h2 data-content="a_propos.titre"></h2>
-        <p data-content="a_propos.texte"></p>
-        <div class="about-infos">
-          <p>📍 <span data-content="general.zone_intervention"></span></p>
-          <p>🕗 <span data-content="general.horaires"></span></p>
+        <div class="hero-image">
+          <img src="/images/illustration-accueil.svg" alt="" width="520" height="440">
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <section class="section" id="realisations">
-    <div class="container">
-      <h2 class="section-title" data-content="galerie.titre"></h2>
-      <div class="gallery" id="gallery-list"></div>
-    </div>
-  </section>
+    <section class="section section-alt">
+      <div class="container">
+        <div class="section-head">
+          <h2 data-content="accueil.constats_titre"></h2>
+        </div>
+        <div class="grid-3" id="constats-list"></div>
+      </div>
+    </section>
 
-  <section class="section section-alt" id="avis">
-    <div class="container">
-      <h2 class="section-title">Ils nous font confiance</h2>
-      <div class="cards" id="avis-list"></div>
-    </div>
-  </section>
+    <section class="section">
+      <div class="container">
+        <div class="section-head">
+          <span class="eyebrow">Mes services</span>
+          <h2>Ce que je peux prendre en charge</h2>
+        </div>
+        <div class="grid-3" id="services-apercu"></div>
+        <p class="more"><a href="/services.html" class="btn btn-outline">Tous mes services</a></p>
+      </div>
+    </section>
 
-  <section class="section" id="contact">
-    <div class="container contact-inner">
-      <div>
-        <h2 data-content="contact.titre"></h2>
-        <p data-content="contact.texte"></p>
-        <div class="contact-infos">
-          <p>📞 <a href="#" id="phone-link-contact"><span data-content="general.telephone"></span></a></p>
-          <p>✉️ <a href="#" id="email-link"><span data-content="general.email"></span></a></p>
-          <p>📍 <span data-content="general.adresse"></span></p>
-          <p>🕗 <span data-content="general.horaires"></span></p>
+    <section class="section section-alt">
+      <div class="container">
+        <div class="section-head">
+          <span class="eyebrow">Méthode</span>
+          <h2 data-content="accueil.etapes_titre"></h2>
+        </div>
+        <div class="grid-3 etapes" id="etapes-list"></div>
+      </div>
+    </section>
+
+    <section class="section hidden" id="livre-dor-apercu">
+      <div class="container">
+        <div class="section-head">
+          <span class="eyebrow">Livre d'or</span>
+          <h2>Ils m'ont fait confiance</h2>
+        </div>
+        <div class="messages" id="messages-apercu"></div>
+        <p class="more"><a href="/livre-dor.html" class="btn btn-outline">Lire le livre d'or</a></p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="cta-band reveal">
+          <h2>Et si vous déléguiez votre administratif ?</h2>
+          <p>Parlez-moi de votre activité et des tâches qui vous pèsent. Le premier échange est l'occasion de voir ensemble ce que je peux prendre en charge.</p>
+          <a href="/contact.html" class="btn btn-light">Me contacter</a>
         </div>
       </div>
-      <form class="contact-form" name="contact" method="POST" data-netlify="true">
-        <input type="hidden" name="form-name" value="contact">
-        <label>Votre nom
-          <input type="text" name="nom" required>
-        </label>
-        <label>Téléphone
-          <input type="tel" name="telephone" required>
-        </label>
-        <label>Votre message
-          <textarea name="message" rows="5" required placeholder="Décrivez votre besoin (fuite, installation, devis...)"></textarea>
-        </label>
-        <button type="submit" class="btn btn-primary">Envoyer ma demande</button>
-      </form>
-    </div>
-  </section>
+    </section>
+  </main>
 
-  <footer class="footer">
-    <div class="container footer-inner">
-      <p>© <span id="year"></span> <span data-content="general.nom_entreprise"></span> — Tous droits réservés</p>
-      <p data-content="general.adresse"></p>
-    </div>
-  </footer>
-
-  <a href="#" class="fab-phone" id="phone-link-fab" aria-label="Appeler">📞</a>
+  <footer id="footer"></footer>
 
   <script src="/js/main.js"></script>
-  <!-- Netlify Identity : permet au client de finaliser son invitation à l'administration -->
+  <!-- Netlify Identity : permet de finaliser l'invitation à l'administration -->
   <script src="https://identity.netlify.com/v1/netlify-identity-widget.js" defer></script>
   <script>
     window.addEventListener('load', function () {
