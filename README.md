@@ -71,6 +71,14 @@ Tout le contenu est stocké dans `content/site.json` et se modifie via l'interfa
 
 ## Tester en local
 
+**Sous Windows** : double-cliquer sur `lancer-site.bat`. Le site s'ouvre dans le navigateur sur `http://localhost:8000/`.
+Le script utilise Python ou Node.js s'ils sont installés, sinon un petit serveur PowerShell intégré à Windows (`outils/serveur.ps1`).
+Fermer la fenêtre noire pour arrêter le site.
+
+En local, les formulaires et l'administration (`/admin`) ne fonctionnent pas : ils ont besoin de Netlify.
+
+**Autres systèmes** :
+
 ```bash
 npx serve .
 # puis ouvrir http://localhost:3000
